@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+*.tsbuildinfo
+
+# blender backup files
+*.blend1
+*.blend2
+
+# Large working scenes kept at the repo root. The tracked source of the campus
+# model is blender/Eng.blend; see README for which file is authoritative.
+/Eng.blend
+/Eng.blend1
+
+# python tool caches
+.ruff_cache/
+__pycache__/
+
+# editor / OS noise
+.DS_Store
+.vscode/
+.idea/
+*.local

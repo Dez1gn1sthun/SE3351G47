@@ -1,0 +1,4 @@
+# Keep the binary models out of diffs and merges.
+*.glb binary
+*.blend binary
+*.png binary

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0d1117" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <title>Western Engineering · 3D Campus</title>
+    <meta
+      name="description"
+      content="Orbit Western University's engineering buildings in 3D, then step inside ACEB 1420 through a LiDAR scan."
+    />
+  </head>
+  <body>
+    <canvas id="scene" aria-label="Interactive 3D model of Western University's engineering buildings"></canvas>
+
+    <!-- Anchor for the `sign` empty: a zero-size point positioned by projection. -->
+    <div
+      id="sign"
+      class="sign"
+      role="button"
+      tabindex="0"
+      hidden
+      aria-label="Open the LiDAR scan of room ACEB 1420"
+    >
+      <span class="sign__dot" aria-hidden="true"></span>
+      <span class="sign__stem" aria-hidden="true"></span>
+      <span class="sign__card">
+        <span class="sign__kicker">LiDAR scan</span>
+        <span class="sign__title">ACEB 1420</span>
+        <span class="sign__hint">
+          Click to step inside
+          <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" />
+          </svg>
+        </span>
+      </span>
+    </div>
+
+    <header id="hud" class="hud" hidden>
+      <h1>Western Engineering</h1>
+      <p>Drag to orbit · Right-drag to pan · Scroll to zoom</p>
+      <p class="hud__legend">
+        <span class="hud__swatch" aria-hidden="true"></span>
+        A sign marks a room you can walk through
+      </p>
+    </header>
+
+    <div id="room-bar" class="roombar" hidden>
+      <button id="back" class="roombar__back" type="button">
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M13 8H4M7.5 4.5 4 8l3.5 3.5" />
+        </svg>
+        Campus
+      </button>
+      <div class="roombar__meta">
+        <strong id="room-title"></strong>
+        <span id="room-kicker"></span>
+      </div>
+    </div>
+
+    <p id="room-hint" class="roomhint" hidden>Drag to look around · Scroll to move</p>
+
+    <!-- Dev only: node names drawn on screen for `?nodes` (see campus.ts). -->
+    <div id="node-debug"></div>
+
+    <div id="loader" class="loader">
+      <div class="loader__inner">
+        <p id="loader-label" class="loader__label">Loading campus</p>
+        <div class="loader__track" role="progressbar" aria-labelledby="loader-label">
+          <i id="loader-fill"></i>
+        </div>
+        <p id="loader-pct" class="loader__pct"></p>
+        <p id="loader-error" class="loader__error" hidden></p>
+        <button id="retry" class="loader__retry" type="button" hidden>Retry</button>
+      </div>
+    </div>
+
+    <noscript>
+      <p class="noscript">This page needs JavaScript to render the 3D campus.</p>
+    </noscript>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
