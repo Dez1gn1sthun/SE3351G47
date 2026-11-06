@@ -33,8 +33,8 @@ export class RoomView {
     this.controls.minPolarAngle = 0.12;
     this.controls.maxPolarAngle = Math.PI - 0.12;
 
-    this.scene.add(new THREE.HemisphereLight('#ffffff', '#5a5f70', 2.2));
-    const fill = new THREE.DirectionalLight('#ffffff', 1.1);
+    this.scene.add(new THREE.HemisphereLight('#ffffff', '#5a5f70', 2.6));
+    const fill = new THREE.DirectionalLight('#ffffff', 1.3);
     fill.position.set(0.4, 1, 0.3).multiplyScalar(10);
     this.scene.add(fill, this.model);
   }
