@@ -14,7 +14,7 @@ import struct
 import subprocess
 import sys
 
-SRC = "/home/nate/Downloads/block mesh.json"
+SRC = os.environ.get("CAMPUS_SRC", "/home/nate/Downloads/block mesh(1).json")
 MODDIR = os.path.expanduser("~/.minetest/mods/campus")
 TEXDIR = os.path.join(MODDIR, "textures")
 DATDIR = os.path.join(MODDIR, "data")
@@ -33,6 +33,9 @@ TEX_OVERRIDE = {
     "jukebox": "jukebox_side",
     "observer": "observer_side",
     "sticky_piston": "piston_side",
+    "crafting_table": "crafting_table_side",
+    "hay_block": "hay_block_side",
+    "quartz_block": "quartz_block_side",
     # Dispenser/dropper sides reuse the furnace side texture in vanilla
     "dropper": "furnace_side",
     # Not present in this asset snapshot; closest plain-face substitutes

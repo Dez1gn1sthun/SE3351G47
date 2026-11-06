@@ -1,20 +1,20 @@
 # Engineering Campus in Luanti
 
 Converts the ObjToSchematic export (`/home/nate/Downloads/block mesh.json`,
-892,954 blocks, 147 distinct Minecraft blocks, footprint 660 x 69 x 568)
+593,424 blocks, 143 distinct Minecraft blocks, footprint 550 x 55 x 474)
 into a Luanti mod that places the whole build with proper colours.
 
 ## How colours are preserved
 
-Each of the 147 blocks is registered as a `campus:<name>` node. Two texture
+Each of the 143 blocks is registered as a `campus:<name>` node. Two texture
 variants exist:
 
-- **Committed variant (`mod/campus/`)**: 147 procedurally generated 16x16 flat
+- **Committed variant (`mod/campus/`)**: 143 procedurally generated 16x16 flat
   swatches (`make_swatches.py`), each holding the average colour of the block
   it replaces. Contains no third-party image data, so it is safe to publish.
   `glowstone` and `sea_lantern` still emit light; the animated prismarine and
   sea lantern frames are dropped since swatches are static.
-- **Submission variant (zip only)**: the same 147 nodes textured with the
+- **Submission variant (zip only)**: the same 143 nodes textured with the
   actual vanilla Minecraft block textures, cloned from PrismarineJS/
   minecraft-assets. `build_campus.py` regenerates those, but they are Mojang's
   property and are deliberately kept out of this repo.
@@ -28,10 +28,10 @@ world baked against one loads correctly against the other.
 - `build_native.py` - rebuilds the no-mods native world
 - `make_swatches.py` - replaces MC textures with Mojang-free flat swatches
 - `mod/campus/` - the committed mod (swatch textures)
-  - `init.lua` / `blocks.lua` - 147 node definitions
+  - `init.lua` / `blocks.lua` - 143 node definitions
   - `place.lua` - `/place_campus` chat command (VoxelManip placement)
   - `data/campus.dat` - compact placement data (4.5 MB)
-  - `textures/` - 147 generated swatches (~87 KB total)
+  - `textures/` - 143 generated swatches (~82 KB total)
 
 ## Install the committed world
 
@@ -67,10 +67,10 @@ bakes, then you delete the mod). Note the engine's map chunks are
 ## Setup
 
 A ready-made world already exists: **`campus`** (Minetest Game, singlenode
-void, build placed at 0,0,0 spanning 660 x 69 x 568, spawn set above the
+void, build placed at 0,0,0 spanning 550 x 55 x 474, spawn set above the
 centre, damage off). Just launch Luanti and open it.
 
-Spawn is set to (383, 71, 203), on the tallest roof, via `static_spawnpoint`
+Spawn is set to (330, 56, 155), on the tallest roof, via `static_spawnpoint`
 in both `world.mt` and `~/.minetest/minetest.conf` (the engine only honours
 the latter). The mod auto-grants `fly`/`fast`/`noclip` on join. If you fall
 into the void, just exit to the menu and rejoin to respawn.

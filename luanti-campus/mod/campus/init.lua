@@ -1,11 +1,5 @@
 local BLOCKS = dofile(minetest.get_modpath("campus") .. "/blocks.lua")
 
-minetest.register_node("campus:acacia_log", {
-  description = "Acacia Log",
-  tiles = {"campus_acacia_log.png"},
-  groups = {choppy = 2, oddly_breakable_by_hand = 2, flammable = 2},
-  sounds = default.node_sound_wood_defaults()
-})
 minetest.register_node("campus:acacia_wood", {
   description = "Acacia Wood",
   tiles = {"campus_acacia_wood.png"},
@@ -180,9 +174,9 @@ minetest.register_node("campus:cracked_stone_bricks", {
   groups = {cracky = 3},
   sounds = default.node_sound_stone_defaults()
 })
-minetest.register_node("campus:cut_sandstone", {
-  description = "Cut Sandstone",
-  tiles = {"campus_cut_sandstone.png"},
+minetest.register_node("campus:crafting_table", {
+  description = "Crafting Table",
+  tiles = {"campus_crafting_table.png"},
   groups = {cracky = 3},
   sounds = default.node_sound_stone_defaults()
 })
@@ -207,12 +201,6 @@ minetest.register_node("campus:cyan_terracotta", {
 minetest.register_node("campus:dark_oak_log", {
   description = "Dark Oak Log",
   tiles = {"campus_dark_oak_log.png"},
-  groups = {choppy = 2, oddly_breakable_by_hand = 2, flammable = 2},
-  sounds = default.node_sound_wood_defaults()
-})
-minetest.register_node("campus:dark_oak_planks", {
-  description = "Dark Oak Planks",
-  tiles = {"campus_dark_oak_planks.png"},
   groups = {choppy = 2, oddly_breakable_by_hand = 2, flammable = 2},
   sounds = default.node_sound_wood_defaults()
 })
@@ -300,18 +288,6 @@ minetest.register_node("campus:end_stone", {
   groups = {cracky = 3},
   sounds = default.node_sound_stone_defaults()
 })
-minetest.register_node("campus:end_stone_bricks", {
-  description = "End Stone Bricks",
-  tiles = {"campus_end_stone_bricks.png"},
-  groups = {cracky = 3},
-  sounds = default.node_sound_stone_defaults()
-})
-minetest.register_node("campus:furnace", {
-  description = "Furnace",
-  tiles = {"campus_furnace.png"},
-  groups = {cracky = 3},
-  sounds = default.node_sound_stone_defaults()
-})
 minetest.register_node("campus:glowstone", {
   description = "Glowstone",
   tiles = {"campus_glowstone.png"},
@@ -330,12 +306,6 @@ minetest.register_node("campus:granite", {
   tiles = {"campus_granite.png"},
   groups = {cracky = 3},
   sounds = default.node_sound_stone_defaults()
-})
-minetest.register_node("campus:gravel", {
-  description = "Gravel",
-  tiles = {"campus_gravel.png"},
-  groups = {crumbly = 3},
-  sounds = default.node_sound_dirt_defaults()
 })
 minetest.register_node("campus:gray_concrete", {
   description = "Gray Concrete",
@@ -373,12 +343,6 @@ minetest.register_node("campus:green_concrete", {
   groups = {cracky = 3},
   sounds = default.node_sound_stone_defaults()
 })
-minetest.register_node("campus:green_concrete_powder", {
-  description = "Green Concrete Powder",
-  tiles = {"campus_green_concrete_powder.png"},
-  groups = {cracky = 3},
-  sounds = default.node_sound_stone_defaults()
-})
 minetest.register_node("campus:green_glazed_terracotta", {
   description = "Green Glazed Terracotta",
   tiles = {"campus_green_glazed_terracotta.png"},
@@ -396,6 +360,12 @@ minetest.register_node("campus:green_wool", {
   tiles = {"campus_green_wool.png"},
   groups = {snappy = 2, choppy = 2, oddly_breakable_by_hand = 3, flammable = 3},
   sounds = default.node_sound_defaults()
+})
+minetest.register_node("campus:hay_block", {
+  description = "Hay Block",
+  tiles = {"campus_hay_block.png"},
+  groups = {cracky = 3},
+  sounds = default.node_sound_stone_defaults()
 })
 minetest.register_node("campus:iron_block", {
   description = "Iron Block",
@@ -463,12 +433,6 @@ minetest.register_node("campus:light_blue_terracotta", {
   groups = {cracky = 3},
   sounds = default.node_sound_stone_defaults()
 })
-minetest.register_node("campus:light_blue_wool", {
-  description = "Light Blue Wool",
-  tiles = {"campus_light_blue_wool.png"},
-  groups = {snappy = 2, choppy = 2, oddly_breakable_by_hand = 3, flammable = 3},
-  sounds = default.node_sound_defaults()
-})
 minetest.register_node("campus:light_gray_concrete", {
   description = "Light Gray Concrete",
   tiles = {"campus_light_gray_concrete.png"},
@@ -498,6 +462,12 @@ minetest.register_node("campus:light_gray_wool", {
   tiles = {"campus_light_gray_wool.png"},
   groups = {snappy = 2, choppy = 2, oddly_breakable_by_hand = 3, flammable = 3},
   sounds = default.node_sound_defaults()
+})
+minetest.register_node("campus:lime_glazed_terracotta", {
+  description = "Lime Glazed Terracotta",
+  tiles = {"campus_lime_glazed_terracotta.png"},
+  groups = {cracky = 3},
+  sounds = default.node_sound_stone_defaults()
 })
 minetest.register_node("campus:lime_terracotta", {
   description = "Lime Terracotta",
@@ -544,6 +514,12 @@ minetest.register_node("campus:nether_bricks", {
 minetest.register_node("campus:nether_quartz_ore", {
   description = "Nether Quartz Ore",
   tiles = {"campus_nether_quartz_ore.png"},
+  groups = {cracky = 3},
+  sounds = default.node_sound_stone_defaults()
+})
+minetest.register_node("campus:nether_wart_block", {
+  description = "Nether Wart Block",
+  tiles = {"campus_nether_wart_block.png"},
   groups = {cracky = 3},
   sounds = default.node_sound_stone_defaults()
 })
@@ -594,6 +570,12 @@ minetest.register_node("campus:orange_glazed_terracotta", {
   tiles = {"campus_orange_glazed_terracotta.png"},
   groups = {cracky = 3},
   sounds = default.node_sound_stone_defaults()
+})
+minetest.register_node("campus:orange_wool", {
+  description = "Orange Wool",
+  tiles = {"campus_orange_wool.png"},
+  groups = {snappy = 2, choppy = 2, oddly_breakable_by_hand = 3, flammable = 3},
+  sounds = default.node_sound_defaults()
 })
 minetest.register_node("campus:packed_ice", {
   description = "Packed Ice",
@@ -673,15 +655,15 @@ minetest.register_node("campus:purpur_pillar", {
   groups = {cracky = 3},
   sounds = default.node_sound_stone_defaults()
 })
-minetest.register_node("campus:quartz_pillar", {
-  description = "Quartz Pillar",
-  tiles = {"campus_quartz_pillar.png"},
+minetest.register_node("campus:quartz_block", {
+  description = "Quartz Block",
+  tiles = {"campus_quartz_block.png"},
   groups = {cracky = 3},
   sounds = default.node_sound_stone_defaults()
 })
-minetest.register_node("campus:red_terracotta", {
-  description = "Red Terracotta",
-  tiles = {"campus_red_terracotta.png"},
+minetest.register_node("campus:quartz_pillar", {
+  description = "Quartz Pillar",
+  tiles = {"campus_quartz_pillar.png"},
   groups = {cracky = 3},
   sounds = default.node_sound_stone_defaults()
 })
@@ -740,12 +722,6 @@ minetest.register_node("campus:soul_sand", {
   groups = {crumbly = 3},
   sounds = default.node_sound_dirt_defaults()
 })
-minetest.register_node("campus:sponge", {
-  description = "Sponge",
-  tiles = {"campus_sponge.png"},
-  groups = {snappy = 2, choppy = 2, oddly_breakable_by_hand = 3, flammable = 3},
-  sounds = default.node_sound_defaults()
-})
 minetest.register_node("campus:spruce_log", {
   description = "Spruce Log",
   tiles = {"campus_spruce_log.png"},
@@ -803,6 +779,12 @@ minetest.register_node("campus:stripped_dark_oak_log", {
 minetest.register_node("campus:stripped_dark_oak_wood", {
   description = "Stripped Dark Oak Wood",
   tiles = {"campus_stripped_dark_oak_wood.png"},
+  groups = {choppy = 2, oddly_breakable_by_hand = 2, flammable = 2},
+  sounds = default.node_sound_wood_defaults()
+})
+minetest.register_node("campus:stripped_jungle_log", {
+  description = "Stripped Jungle Log",
+  tiles = {"campus_stripped_jungle_log.png"},
   groups = {choppy = 2, oddly_breakable_by_hand = 2, flammable = 2},
   sounds = default.node_sound_wood_defaults()
 })
@@ -875,12 +857,6 @@ minetest.register_node("campus:white_wool", {
 minetest.register_node("campus:yellow_glazed_terracotta", {
   description = "Yellow Glazed Terracotta",
   tiles = {"campus_yellow_glazed_terracotta.png"},
-  groups = {cracky = 3},
-  sounds = default.node_sound_stone_defaults()
-})
-minetest.register_node("campus:yellow_terracotta", {
-  description = "Yellow Terracotta",
-  tiles = {"campus_yellow_terracotta.png"},
   groups = {cracky = 3},
   sounds = default.node_sound_stone_defaults()
 })

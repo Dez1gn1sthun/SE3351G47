@@ -1,9 +1,6 @@
 gameid = minetest
 backend = sqlite3
 load_mod_campus = true
-static_spawnpoint = 383,71,203
 enable_damage = false
 player_backend = files
 auth_backend = files
-creative_mode = true
-server_announce = false

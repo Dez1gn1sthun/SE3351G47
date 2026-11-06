@@ -13,7 +13,7 @@ import os
 import struct
 import sys
 
-SRC = "/home/nate/Downloads/block mesh.json"
+SRC = os.environ.get("CAMPUS_SRC", "/home/nate/Downloads/block mesh(1).json")
 MODDIR = os.path.expanduser("~/.minetest/mods/campus_bake")
 WORLD = os.path.expanduser("~/.minetest/worlds/campus_native")
 DATDIR = os.path.join(MODDIR, "data")
@@ -50,6 +50,7 @@ MAP = {
     "coal_ore": "default:stone_with_coal",
     "coarse_dirt": "default:dirt",
     "cobblestone": "default:cobble",
+    "crafting_table": "default:wood",
     "cracked_stone_bricks": "default:cobble",
     "cut_sandstone": "default:sand",
     "cyan_concrete": "wool:cyan",
@@ -87,6 +88,7 @@ MAP = {
     "green_glazed_terracotta": "wool:dark_green",
     "green_terracotta": "default:mossycobble",
     "green_wool": "wool:dark_green",
+    "hay_block": "default:dry_dirt",
     "iron_block": "default:steelblock",
     "iron_ore": "default:stone_with_iron",
     "jukebox": "default:wood",
@@ -104,6 +106,7 @@ MAP = {
     "light_gray_glazed_terracotta": "default:silver_sand",
     "light_gray_terracotta": "default:coral_brown",
     "light_gray_wool": "wool:grey",
+    "lime_glazed_terracotta": "wool:green",
     "lime_terracotta": "default:mossycobble",
     "magenta_terracotta": "wool:magenta",
     "melon": "default:coral_green",
@@ -113,6 +116,7 @@ MAP = {
     "nether_bricks": "default:junglewood",
     "nether_quartz_ore": "default:stone_with_gold",
     "netherrack": "default:brick",
+    "nether_wart_block": "wool:red",
     "note_block": "default:wood",
     "oak_log": "default:wood",
     "oak_planks": "default:wood",
@@ -120,6 +124,7 @@ MAP = {
     "observer": "default:cobble",
     "obsidian": "default:obsidian",
     "orange_glazed_terracotta": "default:dry_dirt",
+    "orange_wool": "wool:orange",
     "packed_ice": "default:ice",
     "pink_concrete": "wool:pink",
     "pink_glazed_terracotta": "wool:pink",
@@ -134,6 +139,7 @@ MAP = {
     "purpur_block": "wool:pink",
     "purpur_pillar": "wool:pink",
     "quartz_pillar": "default:coral_skeleton",
+    "quartz_block": "default:coral_skeleton",
     "red_terracotta": "default:desert_stone",
     "redstone_lamp": "default:meselamp",
     "redstone_ore": "default:stone_with_gold",
@@ -156,6 +162,7 @@ MAP = {
     "stripped_dark_oak_log": "default:tree",
     "stripped_dark_oak_wood": "default:tree",
     "stripped_jungle_wood": "default:wood",
+    "stripped_jungle_log": "default:pine_wood",
     "stripped_oak_log": "default:pine_wood",
     "stripped_oak_wood": "default:pine_wood",
     "stripped_spruce_log": "default:wood",
@@ -239,14 +246,14 @@ local function place(ax, ay, az)
         vm:write_to_map()
         vm:update_map()
       end
-      local flag = io.open(MODPATH .. "/baked.flag", "w")
+      local flag = io.open(minetest.get_worldpath() .. "/campus_bake_done.flag", "w")
       if flag then flag:write("1\n"); flag:close() end
       minetest.log("action", "[campus_bake] done, wrote " .. done .. " nodes")
     end)
 end
 
 minetest.register_on_mods_loaded(function()
-  local done = io.open(MODPATH .. "/baked.flag", "r")
+  local done = io.open(minetest.get_worldpath() .. "/campus_bake_done.flag", "r")
   if done then
     done:close()
     minetest.log("action", "[campus_bake] already baked, skipping")

@@ -42,6 +42,6 @@ mg_biome_np_humidity = {
 	octaves = 3
 	offset = 50
 	}
-seed = 10057897215419818324
+seed = 464198414604046195
 mg_name = singlenode
 [end_of_params]
