@@ -6,23 +6,32 @@ into a Luanti mod that places the whole build with proper colours.
 
 ## How colours are preserved
 
-Each of the 147 blocks is registered as a `campus:<name>` node textured with
-the **actual vanilla Minecraft 1.20.1 16x16 texture** for that block
-(PrismarineJS/minecraft-assets). Nothing is approximated: glazed terracotta,
-dead coral, prismarine, ores, concrete etc. all look exactly like the OtS
-preview. `prismarine` and `sea_lantern` are animated; `glowstone` and
-`sea_lantern` emit light.
+Each of the 147 blocks is registered as a `campus:<name>` node. Two texture
+variants exist:
 
-Mojang textures: fine for local/personal use, do not redistribute the mod.
+- **Committed variant (`mod/campus/`)**: 147 procedurally generated 16x16 flat
+  swatches (`make_swatches.py`), each holding the average colour of the block
+  it replaces. Contains no third-party image data, so it is safe to publish.
+  `glowstone` and `sea_lantern` still emit light; the animated prismarine and
+  sea lantern frames are dropped since swatches are static.
+- **Submission variant (zip only)**: the same 147 nodes textured with the
+  actual vanilla Minecraft block textures, cloned from PrismarineJS/
+  minecraft-assets. `build_campus.py` regenerates those, but they are Mojang's
+  property and are deliberately kept out of this repo.
+
+Node names and registration order are identical between the two variants, so a
+world baked against one loads correctly against the other.
 
 ## Files
 
-- `build_campus.py` - regenerates everything (textures, `campus.dat`, Lua)
-- Mod lives at `~/.minetest/mods/campus/`:
+- `build_campus.py` - rebuilds the mod (downloads MC textures, writes `campus.dat`)
+- `build_native.py` - rebuilds the no-mods native world
+- `make_swatches.py` - replaces MC textures with Mojang-free flat swatches
+- `mod/campus/` - the committed mod (swatch textures)
   - `init.lua` / `blocks.lua` - 147 node definitions
   - `place.lua` - `/place_campus` chat command (VoxelManip placement)
-  - `textures/` - 147 Minecraft textures renamed to `campus_*`
   - `data/campus.dat` - compact placement data (4.5 MB)
+  - `textures/` - 147 generated swatches (~87 KB total)
 
 ## Install the committed world
 
@@ -41,8 +50,11 @@ clones gets their own fresh account. The build itself lives in `map.sqlite`.
 
 | World | Folder | Needs mods? | Colours |
 |---|---|---|---|
-| `campus` | `~/.minetest/worlds/campus` | **yes** - the `campus` mod | exact Minecraft textures |
-| `campus_native` | `~/.minetest/worlds/campus_native` | **no** - stock Minetest Game only | approximate native palette |
+| `campus` | `luanti-campus/world/campus` | the `mod/campus` mod | flat swatches, Mojang-free |
+| `campus_native` | `luanti-campus/world/campus_native` | **none** - stock Minetest Game | stock-node approximation |
+
+For the exact-texture version (vanilla Minecraft block textures), use the zip
+prepared for submission; it is not committed here for licensing reasons.
 
 `campus_native` is pre-baked: the build lives in `map.sqlite`, the temporary
 placer mod was deleted, and its `world.mt` has no `load_mod_*` entries. It
