@@ -26,3 +26,4 @@ __pycache__/
 
 # Submission archives (may contain third-party assets)
 *.zip
+/Eng.glb
