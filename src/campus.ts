@@ -5,7 +5,10 @@ import { MODELS, SIGN_FALLBACK, SIGN_NODE_NAME } from './config';
 import type { ProgressFn } from './types';
 
 /** Where the camera sits relative to the building cluster, at rest. */
-const VIEW_DIRECTION = new THREE.Vector3(0.5, 1.15, 0.44).normalize();
+// Looking in from -z: that is the ACEB entrance side and the side the sun
+// reaches, so the sign faces the default view instead of hiding behind it.
+const BACKDROP = '#0d1219';
+const VIEW_DIRECTION = new THREE.Vector3(0.42, 1.05, -0.88).normalize();
 
 /**
  * The massing blocks ship as flat, single-colour boxes, which read as cardboard
@@ -75,6 +78,50 @@ float massingNoise(vec3 p) {
   material.needsUpdate = true;
 }
 
+/**
+ * The terrain is a rectangular photogrammetry slab, and its cut sides would
+ * otherwise smear the photograph into a "slice of land". Everything below the
+ * photographed surface is painted a dark plinth colour instead, so the asset
+ * reads as a deliberate diorama: photograph on top, solid base below.
+ *
+ * Detection is by height rather than by normal: the export carries a baked
+ * rotation and inverted normals, so world normals are not trustworthy here.
+ */
+function paintPlateSides(
+  material: THREE.MeshStandardMaterial,
+  surfaceY: number,
+): void {
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.uPlateSurfaceY = { value: surfaceY };
+
+    shader.vertexShader = shader.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec3 vPlatePos;')
+      .replace(
+        '#include <begin_vertex>',
+        '#include <begin_vertex>\nvPlatePos = (modelMatrix * vec4(transformed, 1.0)).xyz;',
+      );
+
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        '#include <common>',
+        `#include <common>
+varying vec3 vPlatePos;
+uniform float uPlateSurfaceY;`,
+      )
+      .replace(
+        '#include <color_fragment>',
+        `#include <color_fragment>
+{
+  // 1.0 well below the photographed surface, 0.0 on it or above.
+  float below = 1.0 - smoothstep(uPlateSurfaceY - 1.1, uPlateSurfaceY - 0.35, vPlatePos.y);
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.012, 0.016, 0.024), below);
+}`,
+      );
+  };
+  material.customProgramCacheKey = () => 'plate-plinth';
+  material.needsUpdate = true;
+}
+
 interface DebugNode {
   el: HTMLElement;
   object: THREE.Object3D;
@@ -102,6 +149,8 @@ export class CampusView {
   private model: THREE.Object3D | null = null;
   private debugNodes: DebugNode[] = [];
   private elapsed = 0;
+  /** Cached label width; re-measured on resize so the card never clips. */
+  private labelWidth = 0;
 
   private readonly renderer: THREE.WebGLRenderer;
   private readonly sun: THREE.DirectionalLight;
@@ -124,7 +173,9 @@ export class CampusView {
     // the terrain reads as a floating map plate rather than a clipped image.
     this.scene.background = null;
     // Dissolves the far edge of the plate and separates the building layers.
-    this.scene.fog = new THREE.FogExp2('#161d2b', 0.0011);
+    // Matches --backdrop in style.css exactly: the terrain fades into the page
+    // background, so the plate has no visible rim at any camera angle.
+    this.scene.fog = new THREE.FogExp2(BACKDROP, 0.0016);
 
     this.controls = new OrbitControls(this.camera, canvas);
     this.controls.enableDamping = true;
@@ -354,7 +405,9 @@ export class CampusView {
     const halfH = Math.atan(Math.tan(halfV) * this.camera.aspect);
     const fitV = this.frameRadius / Math.sin(halfV);
     const fitH = this.frameRadius / Math.sin(halfH);
-    const distance = Math.max(fitV, Math.min(fitH, fitV * 1.4)) * 0.95;
+    // Portrait gets up to 1.8x the pull-back: the cluster is wide, and at 1.4x
+    // the corners (including the sign) were being cropped away.
+    const distance = Math.max(fitV, Math.min(fitH, fitV * 1.8)) * 0.95;
 
     this.controls.target.copy(this.frameCenter);
     this.camera.position
@@ -370,6 +423,24 @@ export class CampusView {
    * material with the same map costs nothing visually once the light levels are
    * balanced, and lets the buildings finally cast onto the ground.
    */
+  /**
+   * Height of the photographed surface. The slab is rotated and extruded, so its
+   * bounding box is misleading; a ray through the middle lands on the photo.
+   */
+  private groundSurfaceY(): number {
+    if (!this.groundMesh) return 0;
+
+    const centre = new THREE.Box3()
+      .setFromObject(this.groundMesh)
+      .getCenter(new THREE.Vector3());
+    const hit = new THREE.Raycaster(
+      new THREE.Vector3(centre.x, 500, centre.z),
+      new THREE.Vector3(0, -1, 0),
+    ).intersectObject(this.groundMesh, false)[0];
+
+    return hit ? hit.point.y : 0;
+  }
+
   private makeGroundShadowReceiver(): void {
     const mesh = this.groundMesh;
     if (!mesh) return;
@@ -385,6 +456,7 @@ export class CampusView {
         roughness: 0.95,
         metalness: 0,
       });
+      paintPlateSides(lit, this.groundSurfaceY());
       material.dispose();
       return lit;
     };
@@ -409,7 +481,11 @@ export class CampusView {
         new THREE.Vector3(0, -1, 0),
       );
       const hit = raycaster.intersectObject(this.groundMesh, false)[0];
-      if (hit) height = hit.point.y + 0.06;
+      // Trust the empty: only follow the surface when the two nearly agree, so a
+      // sign authored on a roof or mid-air stays exactly where it was placed.
+      if (hit && Math.abs(hit.point.y - this.anchor.y) < 2.5) {
+        height = hit.point.y + 0.06;
+      }
     }
 
     this.marker.position.set(this.anchor.x, height, this.anchor.z);
@@ -451,13 +527,23 @@ export class CampusView {
     const x = (projected.x * 0.5 + 0.5) * width;
     const y = (-projected.y * 0.5 + 0.5) * height;
 
-    // Margins cover the card (roughly 170x70) and its stem, so the label is
-    // hidden rather than clipped when the anchor leaves the viewport.
-    const onScreen =
-      projected.z < 1 && x > 100 && x < width - 100 && y > 160 && y < height - 30;
+    if (this.labelWidth === 0) {
+      const card = el.querySelector('.sign__card');
+      this.labelWidth = card instanceof HTMLElement ? card.offsetWidth : 170;
+    }
+
+    // The card is hidden when the anchor drops out of view, but it slides along
+    // the viewport edge rather than being cut off: on a narrow phone the sign
+    // sits very close to the side and would otherwise be unreachable.
+    const onScreen = projected.z < 1 && y > 150 && y < height - 20;
     el.style.visibility = onScreen ? 'visible' : 'hidden';
     if (!onScreen) return;
 
+    const half = this.labelWidth / 2 + 12;
+    const clamped = Math.min(Math.max(x, half), Math.max(half, width - half));
+    const shift = Math.round(clamped - x);
+    el.style.setProperty('--label-shift', `${shift}px`);
+    el.classList.toggle('is-shifted', Math.abs(shift) > 2);
     el.style.transform = `translate3d(${Math.round(x)}px, ${Math.round(y)}px, 0)`;
   }
 
@@ -510,6 +596,7 @@ export class CampusView {
   resize(width: number, height: number): void {
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
+    this.labelWidth = 0; // media queries may change the card's size
     if (!this.touched) this.layout();
   }
 

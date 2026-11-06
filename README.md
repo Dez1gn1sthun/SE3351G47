@@ -31,6 +31,14 @@ host, including GitHub Pages under a subpath.
   the anchor leaves the viewport. In the scene itself a pulsing ring is dropped
   onto the terrain under the anchor with a downward raycast, because the
   photogrammetry ground is not flat.
+- **Look** — the massing blocks are untextured boxes, so most of the realism comes
+  from the light rig: a sky-gradient environment map (PBR sheen that a bare
+  directional light cannot give), a 30-degree sun with real shadow maps, contact
+  occlusion and faint mottling injected in the shader, and a sky-bounce fill so
+  the shaded faces are not charcoal. The sun's angle is matched to the shadows
+  baked into the satellite imagery; the terrain's cut sides are painted as a dark
+  plinth so the photogrammetry tile reads as a deliberate diorama rather than a
+  slice of land floating in the void.
 - **Room** — clicking the sign lazily loads `public/models/aceb-1420.glb` (20 MB)
   into a second scene and derives an eye point from the scan's bounding box.
   Leaving the room disposes the geometry and textures to give the GPU memory
@@ -41,20 +49,27 @@ look around, scroll to move, `Esc` (or the Campus button) to leave.
 
 ## Moving the sign
 
-The empty lives in `blender/Eng.blend` and in the export. Either move it in
-Blender and re-export, or patch the export directly (position is in glTF
-coordinates — Y up, metres):
+The empty marks the entrance of ACEB (the Amit Chakma Engineering Building) and
+currently sits at glTF `20, 1.5, -4.5`. Either move it in Blender and re-export,
+or patch the export directly (position is in glTF coordinates — Y up, metres):
 
 ```bash
-npm run sign -- public/models/eng-campus.glb 65,3,56
+npm run sign -- public/models/eng-campus.glb 20,1.5,-4.5
 ```
 
-To keep the `.blend` in agreement, run the Blender-side helper with the same
-numbers:
+To keep the `.blend` source in agreement, run the Blender-side helper with the
+same numbers:
 
 ```bash
-blender -b blender/Eng.blend --python scripts/add-sign-to-blend.py -- 65,3,56
+blender -b Eng.blend --python scripts/add-sign-to-blend.py -- 20,1.5,-4.5
 ```
+
+**The empty has to be selected when exporting the campus.** Blender's glTF
+exporter ships only the selected objects, and the model has been re-exported
+once without it — the app then silently falls back to `SIGN_FALLBACK` and the
+marker drifts to whatever that point means in the new geometry. After any
+re-export, run `npm run sign --` again (it is idempotent: it moves the existing
+node if there is one).
 
 If the empty ever goes missing (a re-export from a stale `.blend`, say), the app
 still renders the marker at `SIGN_FALLBACK` in `src/config.ts` and logs an error.

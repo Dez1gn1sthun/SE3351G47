@@ -18,8 +18,13 @@ export const SIGN_NODE_NAME = 'sign';
 /**
  * Used only if the GLB has no `sign` empty (e.g. it was lost in a re-export).
  * Worth keeping in sync with the empty so a broken export still ships a marker.
+ *
+ * Sits just off the corner of ACEB (the Amit Chakma Engineering Building), where
+ * the model's own "Amit Chakma Engineering Building" text object marks the
+ * entrance. Re-export the campus with the `sign` empty selected, or the marker
+ * falls back to this point.
  */
-export const SIGN_FALLBACK = { x: 65, y: 3, z: 56 } as const;
+export const SIGN_FALLBACK = { x: 20, y: 1.5, z: -4.5 } as const;
 
 export const ROOM = {
   title: 'ACEB 1420',
