@@ -1,0 +1,5 @@
+# Player accounts and runtime state must never be committed.
+players/
+auth.txt
+ipban.txt
+force_loaded.txt
