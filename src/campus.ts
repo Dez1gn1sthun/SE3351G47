@@ -81,90 +81,56 @@ float massingNoise(vec3 p) {
 }
 
 /**
- * Colour for the land beyond the photograph: grass sampled from the photograph's
- * own green pixels, with a little of its blurred detail on top for variation.
- * Averaging the whole image was a mistake — the tile is mostly asphalt, so the
- * surrounding land came out grey.
+ * Surface response per material. The export authors every material at the glTF
+ * default of roughness 0.5, which makes glass, limestone and painted metal all
+ * look the same; these are the values the materials actually want. Colours are
+ * linear, matching how the glTF loader set them.
  */
-function groundTexture(source: THREE.Texture | null): THREE.CanvasTexture {
-  const size = 256;
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d');
-
-  if (ctx) {
-    ctx.fillStyle = grassColour(source).getStyle();
-    ctx.fillRect(0, 0, size, size);
-
-    const image = source?.image as CanvasImageSource | undefined;
-    if (image) {
-      const small = document.createElement('canvas');
-      small.width = 24;
-      small.height = 24;
-      const smallCtx = small.getContext('2d');
-      if (smallCtx) {
-        smallCtx.drawImage(image, 0, 0, 24, 24);
-        ctx.globalAlpha = 0.4;
-        ctx.imageSmoothingEnabled = true;
-        ctx.drawImage(small, 0, 0, size, size);
-        ctx.globalAlpha = 1;
-      }
-    }
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  // One copy of the texture would stretch each blob over 30 metres; repeat it so
-  // the patches read as field-scale variation instead of a flat green wash.
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(26, 26);
-  return texture;
-}
-
-/** Average of the photograph's green-dominant pixels. */
-function grassColour(source: THREE.Texture | null): THREE.Color {
-  const fallback = new THREE.Color('#4c5c39');
-  const image = source?.image as CanvasImageSource | undefined;
-  if (!image) return fallback;
-
-  const sample = 64;
-  const canvas = document.createElement('canvas');
-  canvas.width = sample;
-  canvas.height = sample;
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  if (!ctx) return fallback;
-
-  try {
-    ctx.drawImage(image, 0, 0, sample, sample);
-    const { data } = ctx.getImageData(0, 0, sample, sample);
-    let r = 0;
-    let g = 0;
-    let b = 0;
-    let n = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      const red = data[i] ?? 0;
-      const green = data[i + 1] ?? 0;
-      const blue = data[i + 2] ?? 0;
-      // Foliage: clearly green, and not the near-black of tree shadow.
-      if (green > red * 1.12 && green > blue * 1.05 && green > 40) {
-        r += red;
-        g += green;
-        b += blue;
-        n += 1;
-      }
-    }
-    if (n === 0) return fallback;
-    // The sampled average is the photograph's shaded foliage: dull and dark, and
-    // the sky bounce adds more blue on top. Pull it toward a lit lawn green so the
-    // surrounding land reads as grass rather than grey-green concrete.
-    return new THREE.Color()
-      .setRGB(r / n / 255, g / n / 255, b / n / 255, THREE.SRGBColorSpace)
-      .offsetHSL(0.02, 0.15, 0.1)
-      .lerp(new THREE.Color('#7c9a52'), 0.45);
-  } catch {
-    return fallback;
+function tuneSurface(material: THREE.MeshStandardMaterial): void {
+  switch (material.name) {
+    case 'Glass':
+      // Curtain wall: close to a mirror, so the sky gradient does the work and
+      // the glazing reads as glass rather than as a flat blue panel.
+      // Tinted metal: the reflection carries the scene, the tint keeps it reading
+      // as blue glazing rather than a mirror.
+      material.color.setRGB(0.1, 0.18, 0.46);
+      material.metalness = 0.5;
+      material.roughness = 0.06;
+      material.envMapIntensity = 1.4;
+      break;
+    case 'Brown':
+      // The dark red-brown band on ACEB; glazed tile, so it holds a highlight.
+      material.metalness = 0.15;
+      material.roughness = 0.3;
+      material.envMapIntensity = 1.15;
+      break;
+    case 'White Sheet':
+      // Painted sheet metal: a little metallic so it is not flat card.
+      material.metalness = 0.3;
+      material.roughness = 0.45;
+      material.envMapIntensity = 0.9;
+      break;
+    case 'Black':
+      material.metalness = 0.2;
+      material.roughness = 0.5;
+      material.envMapIntensity = 0.9;
+      break;
+    case 'Grey':
+    case 'Yellow Brick':
+    case 'Material.001':
+      // Concrete and brick: rough, and barely reflective.
+      material.metalness = 0;
+      material.roughness = 0.82;
+      material.envMapIntensity = 0.5;
+      break;
+    case 'Brick':
+      // Limestone facing.
+      material.metalness = 0;
+      material.roughness = 0.78;
+      material.envMapIntensity = 0.55;
+      break;
+    default:
+      break;
   }
 }
 
@@ -176,6 +142,8 @@ function grassColour(source: THREE.Texture | null): THREE.Color {
 function plateBoundsXZ(mesh: THREE.Mesh): {
   minX: number;
   maxX: number;
+  minY: number;
+  maxY: number;
   minZ: number;
   maxZ: number;
 } {
@@ -186,6 +154,8 @@ function plateBoundsXZ(mesh: THREE.Mesh): {
   const point = new THREE.Vector3();
   let minX = Infinity;
   let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
   let minZ = Infinity;
   let maxZ = -Infinity;
 
@@ -194,17 +164,19 @@ function plateBoundsXZ(mesh: THREE.Mesh): {
     point.fromBufferAttribute(position, index ? index.getX(i) : i).applyMatrix4(mesh.matrixWorld);
     if (point.x < minX) minX = point.x;
     if (point.x > maxX) maxX = point.x;
+    if (point.y < minY) minY = point.y;
+    if (point.y > maxY) maxY = point.y;
     if (point.z < minZ) minZ = point.z;
     if (point.z > maxZ) maxZ = point.z;
   }
 
-  return { minX, maxX, minZ, maxZ };
+  return { minX, maxX, minY, maxY, minZ, maxZ };
 }
 
 /**
- * Dissolves the photograph's own edge, so it hands over to the ground extension
- * instead of ending on a line. The band is generous because the plate is only
- * visible from above at this point.
+ * Softens the photograph's own edge. The camera is held close enough that the
+ * edge normally sits outside the viewport; this is the graceful failure when the
+ * window is an awkward aspect.
  */
 function fadePlateRim(material: THREE.MeshStandardMaterial, mesh: THREE.Mesh): void {
   const { minX, maxX, minZ, maxZ } = plateBoundsXZ(mesh);
@@ -276,6 +248,10 @@ export class CampusView {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly sun: THREE.DirectionalLight;
 
+  /** Glazing, so the reflection probe knows what to hide while it renders. */
+  private readonly glassMeshes: THREE.Mesh[] = [];
+  /** Sky gradient, reused as the probe's backdrop. */
+  private skyTexture: THREE.Texture | null = null;
   /** Cached so the camera can be re-fitted when the viewport changes shape. */
   private frameCenter = new THREE.Vector3();
   private frameRadius = 0;
@@ -287,23 +263,21 @@ export class CampusView {
     renderer: THREE.WebGLRenderer,
   ) {
     this.renderer = renderer;
-    this.camera = new THREE.PerspectiveCamera(42, 1, 1, 14000);
+    this.camera = new THREE.PerspectiveCamera(42, 1, 1, 4000);
     this.camera.position.set(150, 120, -60);
 
-    // A real sky, not a backdrop. With ground running out to a hazy horizon the
-    // campus reads as part of a landscape instead of a tile floating in a void.
+    // Lighting only: the sky is never seen, so it exists purely as the
+    // environment map the massing materials need for a specular response.
     this.makeSky();
-    // Linear fog tuned to swallow the far ground before its edge is reachable.
-    this.scene.fog = new THREE.Fog(SKY_HORIZON, 1100, 3600);
 
     this.controls = new OrbitControls(this.camera, canvas);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.06;
     this.controls.screenSpacePanning = false;
-    this.controls.minDistance = 25;
-    this.controls.maxDistance = 460;
+    this.controls.minDistance = 30;
     this.controls.minPolarAngle = 0.12;
-    this.controls.maxPolarAngle = Math.PI * 0.47; // never dip below the ground
+    // Down to almost ground level, for a street-side view of the facades.
+    this.controls.maxPolarAngle = THREE.MathUtils.degToRad(84);
     this.controls.zoomSpeed = 0.8;
     this.controls.target.set(46, 7, 26);
     this.controls.addEventListener('start', () => {
@@ -325,10 +299,9 @@ export class CampusView {
   }
 
   /**
-   * Procedural sky: an equirectangular gradient used both as the visible
-   * background and, through PMREM, as the image-based lighting. The massing
-   * blocks are authored at roughness 0.5 with no textures, so without an
-   * environment they have no specular response at all and read as cardboard.
+   * Procedural sky, baked down to an environment map. The massing blocks are
+   * authored at roughness 0.5 with no textures, so without an environment they
+   * have no specular response at all and read as cardboard.
    */
   private makeSky(): void {
     const canvas = document.createElement('canvas');
@@ -348,6 +321,7 @@ export class CampusView {
     }
 
     const texture = new THREE.CanvasTexture(canvas);
+    this.skyTexture = texture;
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.mapping = THREE.EquirectangularReflectionMapping;
 
@@ -355,21 +329,6 @@ export class CampusView {
     this.scene.environment = pmrem.fromEquirectangular(texture).texture;
     this.scene.environmentIntensity = 0.75;
     pmrem.dispose();
-
-    // A dome, not scene.background: background textures skip tone mapping, so a
-    // background sky never quite meets the tone-mapped, fogged ground and leaves
-    // a seam on the horizon. Geometry goes through the same pipeline.
-    const dome = new THREE.Mesh(
-      new THREE.SphereGeometry(12000, 32, 16),
-      new THREE.MeshBasicMaterial({
-        map: texture,
-        side: THREE.BackSide,
-        fog: false,
-        depthWrite: false,
-      }),
-    );
-    dome.renderOrder = -1;
-    this.scene.add(dome);
   }
 
   /**
@@ -433,20 +392,15 @@ export class CampusView {
         if (standard.map) standard.map.anisotropy = 8;
         if (mesh === this.groundMesh) continue;
 
-        // Glazing is authored matte; a tighter lobe lets the sky env reflect.
-        if (material.name === 'Glass' && 'roughness' in standard) {
-          standard.roughness = 0.18;
-          applyMassingSurface(standard, false);
-        } else {
-          applyMassingSurface(standard, true);
-        }
+        tuneSurface(standard);
+        applyMassingSurface(standard, material.name !== 'Glass');
+        if (material.name === 'Glass') this.glassMeshes.push(mesh);
       }
     });
 
     this.scene.add(this.model);
     if (this.groundMesh) {
       this.makeGroundShadowReceiver();
-      this.addGroundExtension();
     }
 
     const sign = this.model.getObjectByName(SIGN_NODE_NAME);
@@ -473,6 +427,7 @@ export class CampusView {
     this.placeMarkerOnTerrain();
 
     this.frameBuildings();
+    this.captureReflectionProbe();
     this.mountDebugNodes();
   }
 
@@ -499,6 +454,73 @@ export class CampusView {
     this.frameRadius = box.getBoundingSphere(new THREE.Sphere()).radius;
     this.aimSun();
     this.layout();
+  }
+
+  /**
+   * Renders the site into a cubemap and hands it to the glazing as an env map.
+   * The glazing otherwise only ever reflects the sky gradient, which reads as a
+   * flat blue panel; a probe picks up the road, the car park and the neighbouring
+   * blocks, which is what makes glass look like glass.
+   */
+  private captureReflectionProbe(): void {
+    if (this.glassMeshes.length === 0 || !this.model) return;
+
+    // Sit the probe low and just off the facade. Placed high it only ever sees
+    // sky, and uniformly bright sky reflecting in a smooth surface is exactly the
+    // flat panel we are trying to get rid of: the contrast of dark ground below
+    // against bright sky above is what reads as glass.
+    const bounds = new THREE.Box3();
+    for (const mesh of this.glassMeshes) bounds.expandByObject(mesh);
+    const centre = bounds.getCenter(new THREE.Vector3());
+    const size = bounds.getSize(new THREE.Vector3());
+    const radius = Math.max(size.x, size.z) * 1.6;
+    const outward = VIEW_DIRECTION.clone().setY(0).normalize();
+    const position = centre
+      .clone()
+      .addScaledVector(outward, radius * 0.5)
+      .setY(bounds.min.y + size.y * 0.12);
+
+    const cubeTarget = new THREE.WebGLCubeRenderTarget(512, {
+      type: THREE.HalfFloatType,
+      generateMipmaps: true,
+      minFilter: THREE.LinearMipmapLinearFilter,
+      colorSpace: THREE.SRGBColorSpace,
+    });
+    const cubeCamera = new THREE.CubeCamera(1, radius * 8, cubeTarget);
+    cubeCamera.position.copy(position);
+
+    // Hidden while probing: the glazing would otherwise reflect itself and go
+    // black, and the marker is not part of the building.
+    const hidden: THREE.Object3D[] = [...this.glassMeshes, this.marker];
+    const previousVisibility = hidden.map((object) => object.visible);
+    hidden.forEach((object) => {
+      object.visible = false;
+    });
+    const previousBackground = this.scene.background;
+    this.scene.background = this.skyTexture;
+
+    cubeCamera.update(this.renderer, this.scene);
+
+    hidden.forEach((object, index) => {
+      object.visible = previousVisibility[index] ?? true;
+    });
+    this.scene.background = previousBackground;
+
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    const env = pmrem.fromCubemap(cubeTarget.texture).texture;
+    pmrem.dispose();
+    cubeTarget.dispose();
+
+    for (const mesh of this.glassMeshes) {
+      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      for (const material of materials) {
+        const standard = material as THREE.MeshStandardMaterial;
+        standard.envMap = env;
+        standard.envMapIntensity = 1.4;
+        standard.roughness = 0.06;
+        standard.needsUpdate = true;
+      }
+    }
   }
 
   /**
@@ -548,7 +570,7 @@ export class CampusView {
     this.controls.target.copy(this.frameCenter);
     this.camera.position
       .copy(this.frameCenter)
-      .addScaledVector(VIEW_DIRECTION, Math.min(distance, this.controls.maxDistance));
+      .addScaledVector(VIEW_DIRECTION, distance);
     this.camera.lookAt(this.frameCenter);
     this.controls.update();
   }
@@ -559,60 +581,6 @@ export class CampusView {
    * material with the same map costs nothing visually once the light levels are
    * balanced, and lets the buildings finally cast onto the ground.
    */
-  /**
-   * Land beyond the photograph, out to the fog's far plane. Without it the tile
-   * ends in mid-air and the whole scene reads as a slice of land in a void; with
-   * it the campus sits on ground that recedes to a hazy horizon.
-   */
-  private addGroundExtension(): void {
-    if (!this.groundMesh) return;
-
-    // The plate is not level: the export bakes a ~0.6 degree tilt into the ground
-    // node, which is nearly two metres across the tile. A flat plane at one
-    // height therefore sits *above* the far half of the photograph and hides it.
-    // Fit a plane through three sampled points on the surface instead.
-    const { minX, maxX, minZ, maxZ } = plateBoundsXZ(this.groundMesh);
-    const sample = (fx: number, fz: number): THREE.Vector3 | null => {
-      const hit = new THREE.Raycaster(
-        new THREE.Vector3(minX + (maxX - minX) * fx, 500, minZ + (maxZ - minZ) * fz),
-        new THREE.Vector3(0, -1, 0),
-      ).intersectObject(this.groundMesh as THREE.Mesh, false)[0];
-      return hit ? hit.point.clone() : null;
-    };
-
-    const a = sample(0.15, 0.15);
-    const b = sample(0.85, 0.15);
-    const c = sample(0.15, 0.85);
-    if (!a || !b || !c) return;
-
-    const normal = new THREE.Vector3()
-      .subVectors(b, a)
-      .cross(new THREE.Vector3().subVectors(c, a))
-      .normalize();
-    if (normal.y < 0) normal.negate();
-
-    const centre = a
-      .add(b)
-      .add(c)
-      .multiplyScalar(1 / 3)
-      .addScaledVector(normal, -0.3);
-
-    const map = (this.groundMesh.material as THREE.MeshStandardMaterial).map;
-    const ground = new THREE.Mesh(
-      new THREE.CircleGeometry(4000, 72),
-      new THREE.MeshStandardMaterial({
-        color: new THREE.Color().setScalar(1.85),
-        map: groundTexture(map),
-        roughness: 1,
-        metalness: 0,
-        envMapIntensity: 0.6,
-      }),
-    );
-    ground.position.copy(centre);
-    ground.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
-    this.scene.add(ground);
-  }
-
   private makeGroundShadowReceiver(): void {
     const mesh = this.groundMesh;
     if (!mesh) return;
