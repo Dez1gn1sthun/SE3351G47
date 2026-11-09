@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>WEVE — Western Engineering Virtual Explorer</title>
+  <meta name="description" content="Walk through a 3D-scanned Western Engineering classroom in your browser.">
+  <meta name="theme-color" content="#2a1446">
+  <link rel="stylesheet" href="styles.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#text-tour" id="skip-to-text">Skip to the text-only tour</a>
+  <div id="announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ============ #1 Entry screen (BR-01, BR-03, BR-10) ============ -->
+  <section id="entry" class="screen entry" aria-labelledby="entry-title">
+    <div class="entry-card">
+      <p class="brand">
+        <span class="brand-mark" aria-hidden="true">W</span>
+        <span>Western Engineering</span>
+      </p>
+      <h1 id="entry-title">Virtual Explorer</h1>
+      <p class="lede">
+        Walk through a 3D-scanned Western Engineering classroom and the hallway outside it,
+        right from your browser. No download, no account.
+      </p>
+
+      <fieldset class="area-select">
+        <legend>Where do you want to start?</legend>
+        <div id="area-options" class="area-options"></div>
+      </fieldset>
+
+      <label class="check">
+        <input type="checkbox" id="lowperf-entry">
+        <span>Low-performance mode <span class="hint">for older laptops and phones</span></span>
+      </label>
+
+      <div class="entry-actions">
+        <button id="start-btn" class="btn btn-primary" type="button">Start tour</button>
+        <button id="text-btn" class="btn btn-ghost" type="button">Text-only tour</button>
+      </div>
+
+      <a class="program-link" href="https://www.eng.uwo.ca/" target="_blank" rel="noopener">Explore Western Engineering programs</a>
+      <p id="entry-error" class="entry-error" role="alert" hidden></p>
+    </div>
+  </section>
+
+  <!-- ============ #8 Loading indicator (BR-09) ============ -->
+  <div id="loading" class="loading" hidden role="status" aria-live="polite">
+    <div class="spinner" aria-hidden="true"></div>
+    <p id="loading-text">Loading…</p>
+    <div class="progress" aria-hidden="true"><div id="loading-bar" class="progress-bar"></div></div>
+  </div>
+
+  <!-- ============ #2 Viewer ============ -->
+  <main id="viewer" class="viewer" hidden>
+    <canvas id="scene" tabindex="0"
+      aria-label="3D view. Use W A S D or the arrow keys to move, E to go through a door, I to open the nearest point of interest, M for the explore menu."></canvas>
+
+    <header class="hud-top">
+      <p class="brand small">
+        <span class="brand-mark" aria-hidden="true">W</span>
+        <span class="brand-text">Western Engineering <span class="muted">Virtual Explorer</span></span>
+      </p>
+      <p class="area-chip" id="area-name" aria-live="off"></p>
+      <nav class="hud-actions" aria-label="Viewer controls">
+        <button id="explore-btn" class="hud-btn" type="button" aria-expanded="false" aria-controls="explore-panel">Explore</button>
+        <button id="text-mode-btn" class="hud-btn" type="button">Text view</button>
+        <button id="lowperf-btn" class="hud-btn" type="button" aria-pressed="false">Low-perf</button>
+        <button id="help-btn" class="hud-btn icon" type="button" aria-expanded="false" aria-controls="help-panel" aria-label="Controls help">?</button>
+        <button id="exit-btn" class="hud-btn" type="button">Exit</button>
+      </nav>
+    </header>
+
+    <!-- #5 Minimap (BR-07) -->
+    <figure class="minimap">
+      <canvas id="minimap" width="220" height="160" role="img" aria-label="Minimap"></canvas>
+      <figcaption id="minimap-label"></figcaption>
+    </figure>
+
+    <!-- #13 Door prompt (BR-04) -->
+    <div id="door-prompt" class="door-prompt" hidden>
+      <button id="door-btn" class="btn btn-primary" type="button"></button>
+    </div>
+
+    <!-- #6 Quick jump + POI list (BR-08) -->
+    <aside id="explore-panel" class="panel" hidden aria-labelledby="explore-title">
+      <div class="panel-head">
+        <h2 id="explore-title">Explore</h2>
+        <button class="panel-close" type="button" data-close="explore-panel" aria-label="Close explore menu">✕</button>
+      </div>
+      <h3>Quick jump</h3>
+      <ul id="jump-list" class="btn-list"></ul>
+      <h3>Points of interest</h3>
+      <ul id="poi-list" class="btn-list"></ul>
+      <h3>Areas</h3>
+      <ul id="area-list" class="btn-list"></ul>
+      <a class="program-link small" href="https://www.eng.uwo.ca/" target="_blank" rel="noopener">Explore Western Engineering programs</a>
+    </aside>
+
+    <!-- #7 Information panel (BR-05, BR-06) -->
+    <aside id="info-panel" class="panel info" hidden role="dialog" aria-modal="false" aria-labelledby="info-title">
+      <div class="panel-head">
+        <h2 id="info-title"></h2>
+        <button id="info-close" class="panel-close" type="button" data-close="info-panel" aria-label="Close information panel">✕</button>
+      </div>
+      <img id="info-img" alt="" hidden>
+      <p id="info-text"></p>
+    </aside>
+
+    <aside id="help-panel" class="panel" hidden aria-labelledby="help-title">
+      <div class="panel-head">
+        <h2 id="help-title">Controls</h2>
+        <button class="panel-close" type="button" data-close="help-panel" aria-label="Close controls help">✕</button>
+      </div>
+      <dl class="controls">
+        <dt>Move</dt><dd><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or <kbd>↑</kbd><kbd>↓</kbd></dd>
+        <dt>Turn</dt><dd><kbd>←</kbd><kbd>→</kbd>, or drag with mouse / finger</dd>
+        <dt>Look up / down</dt><dd><kbd>PgUp</kbd><kbd>PgDn</kbd>, or drag</dd>
+        <dt>Walk faster</dt><dd>Hold <kbd>Shift</kbd></dd>
+        <dt>Go through door</dt><dd><kbd>E</kbd>, click the door, or walk into it</dd>
+        <dt>Nearest info point</dt><dd><kbd>I</kbd>, or click a purple <b>i</b> marker</dd>
+        <dt>Explore menu</dt><dd><kbd>M</kbd></dd>
+        <dt>Close panels</dt><dd><kbd>Esc</kbd></dd>
+      </dl>
+    </aside>
+
+    <!-- Touch movement pad (BR-04, BR-09) -->
+    <div id="touch-pad" class="touch-pad" aria-hidden="true">
+      <button type="button" data-key="forward" class="tp-up" tabindex="-1">▲</button>
+      <button type="button" data-key="turnLeft" class="tp-left" tabindex="-1">◀</button>
+      <button type="button" data-key="back" class="tp-down" tabindex="-1">▼</button>
+      <button type="button" data-key="turnRight" class="tp-right" tabindex="-1">▶</button>
+    </div>
+
+    <div id="fade" class="fade" aria-hidden="true"></div>
+  </main>
+
+  <!-- ============ #9 Accessible text alternative (BR-11) ============ -->
+  <section id="text-tour" class="screen text-tour" hidden tabindex="-1" aria-labelledby="text-title">
+    <header class="text-head">
+      <p class="brand">
+        <span class="brand-mark" aria-hidden="true">W</span>
+        <span>Western Engineering</span>
+      </p>
+      <h1 id="text-title">Virtual Explorer — text tour</h1>
+      <p id="text-notice" class="text-notice" hidden></p>
+      <div class="entry-actions">
+        <button id="text-to-3d" class="btn btn-primary" type="button">Open the 3D tour</button>
+        <button id="text-to-start" class="btn btn-ghost" type="button">Back to start</button>
+      </div>
+    </header>
+    <div id="text-content"></div>
+    <footer class="text-foot">
+      <a class="program-link" href="https://www.eng.uwo.ca/" target="_blank" rel="noopener">Explore Western Engineering programs</a>
+    </footer>
+  </section>
+
+  <div id="toast" class="toast" role="status" hidden>
+    <span id="toast-text"></span>
+    <button id="toast-action" class="btn btn-small" type="button" hidden></button>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

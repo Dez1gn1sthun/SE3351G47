@@ -1,0 +1,101 @@
+{
+  "_readme": "Editable content for the WEVE viewer (BR-13). Coordinates are metres; yawDeg 0 faces -z (the classroom's front wall). In the viewer press P to print your current x/z/yaw for placing points.",
+  "site": {
+    "title": "Western Engineering Virtual Explorer",
+    "defaultArea": "hallway",
+    "programLink": {
+      "label": "Explore Western Engineering programs",
+      "url": "https://www.eng.uwo.ca/"
+    },
+    "analyticsEndpoint": null
+  },
+  "areas": {
+    "hallway": {
+      "name": "Hallway",
+      "summary": "Start outside the classroom and walk in through the door.",
+      "description": "A straight corridor about 20 metres long and 3 metres wide. Lockers line the right-hand wall and a notice board hangs on the left. The classroom door is halfway down on the left.",
+      "placeholder": "hallway",
+      "bounds": { "minX": -1.5, "maxX": 1.5, "minZ": -10, "maxZ": 10 },
+      "spawn": { "x": 0, "z": 8, "yawDeg": 0 },
+      "doors": [
+        { "id": "to-classroom", "label": "Enter the classroom", "x": -1.5, "z": 0, "width": 1.0, "target": "classroom", "targetSpawn": "door" }
+      ],
+      "jumpPoints": [
+        { "id": "start", "label": "Hallway entrance", "x": 0, "z": 8, "yawDeg": 0 },
+        { "id": "classroomDoor", "label": "Outside the classroom", "x": -0.7, "z": 0, "yawDeg": 90 },
+        { "id": "end", "label": "End of the hallway", "x": 0, "z": -8, "yawDeg": 180 }
+      ],
+      "infoPoints": [
+        {
+          "id": "classroom-entrance",
+          "title": "Classroom entrance",
+          "x": -1.3, "y": 2.0, "z": 1.0,
+          "text": "Placeholder: this door leads into one of the Engineering classrooms used for first-year lectures and tutorials. Replace this text with the real room number and what it's used for.",
+          "image": "assets/info/classroom-door.jpg",
+          "imageAlt": "The classroom door seen from the hallway"
+        },
+        {
+          "id": "notice-board",
+          "title": "Notice board",
+          "x": -1.3, "y": 1.6, "z": -4,
+          "text": "Placeholder: student clubs, design teams and co-op sessions post here. Replace with real content.",
+          "image": "assets/info/notice-board.jpg",
+          "imageAlt": "A cork notice board covered with event posters"
+        }
+      ]
+    },
+    "classroom": {
+      "name": "Classroom",
+      "summary": "Jump straight into the 3D-scanned classroom.",
+      "description": "A classroom about 10 metres wide and 8 metres deep. The whiteboard and instructor station are at the front. Rows of desks face the front, windows run along the left wall, and the door is at the back right.",
+      "placeholder": "classroom",
+      "model": "assets/classroom.glb",
+      "modelLowPerf": null,
+      "modelTransform": { "position": [0, 0, 0], "rotationYDeg": 0, "scale": 1 },
+      "bounds": { "minX": -5, "maxX": 5, "minZ": -4, "maxZ": 4 },
+      "spawn": { "x": 3.5, "z": 3.1, "yawDeg": 0 },
+      "doors": [
+        { "id": "to-hallway", "label": "Go back to the hallway", "x": 3.5, "z": 4, "width": 1.0, "target": "hallway", "targetSpawn": "classroomDoor" }
+      ],
+      "jumpPoints": [
+        { "id": "door", "label": "Door", "x": 3.5, "z": 3.1, "yawDeg": 0 },
+        { "id": "front", "label": "Front of the room", "x": 0, "z": -2.3, "yawDeg": 180 },
+        { "id": "seating", "label": "Seating", "x": -0.5, "z": 1.6, "yawDeg": 0 }
+      ],
+      "infoPoints": [
+        {
+          "id": "whiteboard",
+          "title": "Whiteboard",
+          "x": 0, "y": 2.3, "z": -3.7,
+          "text": "Placeholder: instructors work through derivations and design problems here. Replace with real content.",
+          "image": "assets/info/whiteboard.jpg",
+          "imageAlt": "The whiteboard at the front of the classroom"
+        },
+        {
+          "id": "instructor-station",
+          "title": "Instructor station",
+          "x": 1.4, "y": 1.3, "z": -2.8,
+          "text": "Placeholder: the lectern controls the projector and lecture capture. Replace with real content.",
+          "image": "assets/info/instructor-station.jpg",
+          "imageAlt": "The instructor's desk and lectern"
+        },
+        {
+          "id": "seating",
+          "title": "Student seating",
+          "x": -2.3, "y": 1.3, "z": 0.6,
+          "text": "Placeholder: desks are arranged in rows facing the front. Replace with real capacity and layout details.",
+          "image": "assets/info/seating.jpg",
+          "imageAlt": "Rows of student desks"
+        },
+        {
+          "id": "windows",
+          "title": "Windows",
+          "x": -4.7, "y": 1.9, "z": -1,
+          "text": "Placeholder: natural light along the left wall. Replace with what the windows look out on.",
+          "image": "assets/info/windows.jpg",
+          "imageAlt": "Windows along the classroom wall"
+        }
+      ]
+    }
+  }
+}
