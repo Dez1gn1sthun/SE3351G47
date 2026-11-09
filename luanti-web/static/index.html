@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Western Engineering Campus &middot; Luanti</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #080b0f;
+    color: #e6edf5;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  #boot {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    text-align: center;
+  }
+  #boot .eyebrow {
+    margin: 0 0 10px;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #7d8fa3;
+  }
+  #boot h1 {
+    margin: 0 0 18px;
+    font-size: clamp(26px, 5vw, 40px);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  #boot p.status {
+    margin: 0 0 12px;
+    font-size: 15px;
+    color: #b9c7d6;
+  }
+  #track {
+    width: min(340px, 70vw);
+    height: 4px;
+    margin: 0 auto 14px;
+    border-radius: 2px;
+    background: #1b232c;
+    overflow: hidden;
+  }
+  #fill {
+    width: 0;
+    height: 100%;
+    background: #4f8fd4;
+    transition: width 120ms linear;
+  }
+  #boot p.detail {
+    margin: 0 auto;
+    max-width: 30em;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #6f8095;
+  }
+  #boot.error p.status { color: #f0857a; }
+  #boot.error #track { display: none; }
+  #boot p.fine {
+    margin: 18px auto 0;
+    max-width: 34em;
+    font-size: 11px;
+    color: #4d5c6d;
+  }
+</style>
+</head>
+<body>
+<div id="boot">
+  <div>
+    <p class="eyebrow">Western Engineering</p>
+    <h1>Engineering Campus</h1>
+    <p class="status" id="status">Starting&hellip;</p>
+    <div id="track"><div id="fill"></div></div>
+    <p class="detail" id="detail">
+      Luanti compiles to WebAssembly, so the engine itself is running here in the
+      browser. The first visit downloads the game and the campus world; later
+      visits load them from local storage.
+    </p>
+    <p class="fine" id="fine">
+      Luanti (GPL-2.0) with Minetest Game (CC-BY-SA-3.0).
+    </p>
+  </div>
+</div>
+
+<script src="%__RELEASE_UUID__%/launcher.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var WORLD = "campus";
+  var GAME = "minetest";
+  var PLAYER = "Visitor";
+  var SPAWN = "330,56,155";
+
+  var params = new URLSearchParams(window.location.search);
+  var range = parseInt(params.get("range") || "120", 10);
+  if (!(range > 0 && range <= 400)) { range = 120; }
+
+  // ?spawn=x,y,z overrides the documented spawn point, which is useful for
+  // checking the campus from above without editing and rebuilding the page.
+  var spawn = params.get("spawn") || SPAWN;
+
+  var bootEl = document.getElementById("boot");
+  var statusEl = document.getElementById("status");
+  var detailEl = document.getElementById("detail");
+  var fillEl = document.getElementById("fill");
+  var stage = {};
+
+  function say(text) { statusEl.textContent = text; }
+  function detail(text) { detailEl.textContent = text; }
+
+  function paint() {
+    var total = 0;
+    var done = 0;
+    Object.keys(stage).forEach(function (key) {
+      total += 1;
+      done += stage[key];
+    });
+    fillEl.style.width = total ? (100 * done / total).toFixed(1) + "%" : "0%";
+  }
+
+  function fail(title, message) {
+    bootEl.classList.add("error");
+    say(title || "Could not start Luanti");
+    detail(message);
+  }
+
+  // Luanti's threads need SharedArrayBuffer, which browsers only expose to a
+  // cross-origin isolated page. Everything that says no here is a visitor we
+  // cannot serve: a phone, an old browser, or a host that dropped the headers.
+  // Better a sentence than a black rectangle.
+  if (typeof SharedArrayBuffer === "undefined" || !window.crossOriginIsolated) {
+    fail("This needs a desktop browser",
+         "Luanti runs as threaded WebAssembly, which phones and older browsers " +
+         "do not provide. A desktop browser with hardware acceleration should work.");
+    return;
+  }
+
+  try {
+    var mtl = new LuantiLauncher();
+
+    // No multiplayer, so no relay. By default the launcher asks upstream's
+    // third-party proxy (wss://luanti.dustlabs.io/proxy) for an address on every
+    // start, which is both a dependency on someone else's service and a request
+    // leaving the visitor's browser. An empty URL means it asks for nothing: the
+    // address request rejects inside a promise the launcher already discards, and
+    // singleplayer never opens a socket.
+    mtl.setProxy("");
+
+    // Packs live at a stable path, outside the per-release directory, so that
+    // a redeploy does not bump their version and make the engine delete the
+    // visitor's saved world along with the old files.
+    mtl.setPacksDir("packs/", false);
+
+    // Memory and network: this is one fixed 550 x 474 build on a void map, so
+    // there is nothing to generate and no reason to reach far past it.
+    mtl.setConf("viewing_range", range);
+    mtl.setConf("max_block_send_distance", 6);
+    mtl.setConf("max_block_generate_distance", 2);
+
+    // Spawn on the tallest roof. The engine reads this from minetest.conf
+    // only; world.mt is ignored.
+    mtl.setConf("static_spawnpoint", spawn);
+    mtl.setConf("name", PLAYER);
+    mtl.setConf("enable_damage", "false");
+
+    // Creative, and the clock stopped at the baked daytime. Without creative a
+    // visitor arrives empty-handed in survival and cannot dig stone at all;
+    // without time_speed 0 the campus falls into night within minutes.
+    mtl.setConf("creative_mode", "true");
+    mtl.setConf("time_speed", "0");
+    mtl.setLang("en");
+
+    mtl.onprogress = function (task, fraction) {
+      var parts = String(task).split(":");
+      if (parts[0] === "download") {
+        stage[parts[1]] = fraction;
+        say("Downloading " + parts[1] + "\u2026");
+      } else if (parts[0] === "install") {
+        stage[parts[1]] = fraction;
+        say("Unpacking " + parts[1] + "\u2026");
+      } else if (parts[0] === "remove") {
+        say("Cleaning up " + parts[1] + "\u2026");
+      } else {
+        say(task);
+      }
+      paint();
+    };
+
+    mtl.onprint = function (line) {
+      if (window.console) { console.log(line); }
+    };
+
+    mtl.onerror = fail;
+
+    mtl.onready = function () {
+      say("Entering campus\u2026");
+      detail("Click the view once it appears to capture the mouse. " +
+             "WASD to move, space to jump, E for the inventory.");
+      var args = new LuantiArgs();
+      args.go = true;
+      args.gameid = GAME;
+      args.world = "/luanti/worlds/" + WORLD;
+      args.name = PLAYER;
+      try {
+        mtl.launch(args);
+      } catch (err) {
+        fail(err);
+      }
+    };
+
+    Promise.all([GAME, WORLD].map(function (name) {
+      return mtl.addPack(name);
+    })).catch(fail);
+  } catch (err) {
+    fail(err);
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Cross-origin isolation. Luanti's WebAssembly build uses threads, which the
+# browser only allows on a cross-origin isolated page. Every response on this
+# origin has to carry these, not just the document.
+#
+# Netlify and Cloudflare Pages both read this file. GitHub Pages does not, which
+# is why this project cannot be hosted there.
+
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: require-corp
+  Cross-Origin-Resource-Policy: same-origin
+
+# The document names the release by hash, so it must never be cached.
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# The packs are small (campus 3.3 MB, game 2.2 MB compressed) and never change
+# under a given name, so they can be cached hard. The engine's wasm binary lives
+# in the hashed release directory and upstream already sets a long max-age on it.
+/packs/*
+  Cache-Control: public, max-age=31536000, immutable
