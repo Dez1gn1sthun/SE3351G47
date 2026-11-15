@@ -1,104 +1,92 @@
-# Western Engineering · 3D Campus
+# Western Engineering · Campus
 
-An orbitable 3D model of Western University's engineering buildings. A sign
-pinned to the model opens a LiDAR scan of **ACEB 1420** — click it and you are
-standing inside the room.
+Western University's engineering campus, playable in a browser tab. The entry
+screen leads into a real Luanti engine compiled to WebAssembly, running a voxel
+model of the campus that was built from a Blender export.
 
-Built with TypeScript, Vite and Three.js. No framework: the whole app is one
-canvas plus a thin DOM overlay.
-
-## Running it
-
-```bash
-npm install
-npm run dev        # http://localhost:5173
-npm run build      # static site in dist/
-npm run preview    # serve the build locally
-```
-
-The build uses a relative base (`./`), so `dist/` can be dropped on any static
-host, including GitHub Pages under a subpath.
-
-## How it works
-
-- **Campus** — `public/models/eng-campus.glb` is framed to the building cluster
-  on load, then handed to `OrbitControls`. The camera re-fits if the window is
-  resized before the user starts orbiting, so portrait phones get a workable
-  framing instead of a cropped one.
-- **Sign** — the model contains an empty named `sign`. Each frame its world
-  position is projected to screen space and a DOM card is moved to that point
-  (see `CampusView.positionLabel`). The card is hidden rather than clipped when
-  the anchor leaves the viewport. In the scene itself a pulsing ring is dropped
-  onto the terrain under the anchor with a downward raycast, because the
-  photogrammetry ground is not flat.
-- **Look** — the massing blocks are untextured boxes, so most of the realism comes
-  from the light rig: a sky-gradient environment map (PBR sheen that a bare
-  directional light cannot give), a 30-degree sun with real shadow maps, contact
-  occlusion and faint mottling injected in the shader, and a sky-bounce fill so
-  the shaded faces are not charcoal. The sun's angle is matched to the shadows
-  baked into the satellite imagery; the terrain's cut sides are painted as a dark
-  plinth so the photogrammetry tile reads as a deliberate diorama rather than a
-  slice of land floating in the void.
-- **Room** — clicking the sign lazily loads `public/models/aceb-1420.glb` (20 MB)
-  into a second scene and derives an eye point from the scan's bounding box.
-  Leaving the room disposes the geometry and textures to give the GPU memory
-  back; reopening re-fetches from the HTTP cache.
-
-Controls: drag to orbit, right-drag to pan, scroll to zoom. In the room, drag to
-look around, scroll to move, `Esc` (or the Campus button) to leave.
-
-## Moving the sign
-
-The empty marks the entrance of ACEB (the Amit Chakma Engineering Building) and
-currently sits at glTF `20, 1.5, -4.5`. Either move it in Blender and re-export,
-or patch the export directly (position is in glTF coordinates — Y up, metres):
-
-```bash
-npm run sign -- public/models/eng-campus.glb 20,1.5,-4.5
-```
-
-To keep the `.blend` source in agreement, run the Blender-side helper with the
-same numbers:
-
-```bash
-blender -b Eng.blend --python scripts/add-sign-to-blend.py -- 20,1.5,-4.5
-```
-
-**The empty has to be selected when exporting the campus.** Blender's glTF
-exporter ships only the selected objects, and the model has been re-exported
-once without it — the app then silently falls back to `SIGN_FALLBACK` and the
-marker drifts to whatever that point means in the new geometry. After any
-re-export, run `npm run sign --` again (it is idempotent: it moves the existing
-node if there is one).
-
-If the empty ever goes missing (a re-export from a stale `.blend`, say), the app
-still renders the marker at `SIGN_FALLBACK` in `src/config.ts` and logs an error.
-
-Dev helpers, stripped from production builds: append `?nodes` to draw every node
-name on screen, or `?sign=x,y,z` to try a marker position without re-exporting.
+Nothing to install and no account: the first visit downloads the engine and the
+world, later visits load both from the browser's local storage.
 
 ## Layout
 
 ```text
-index.html            shell: canvas, sign card, HUD, loader
-src/main.ts           renderer, mode switching, load/error flow, loop
-src/campus.ts         campus scene, camera framing, sign marker + projection
-src/room.ts           interior scan scene and disposal
-src/config.ts         model paths, sign node name, copy
-src/style.css         all styling
-public/models/        eng-campus.glb, aceb-1420.glb (served as-is)
+viewer/               entry screen (WEVE): markup, styles, tour content loader
+  index.html          the landing page — "Enter the campus"
+  main.js             entry screen logic; the start button opens luanti.html
+  styles.css
+public/viewer/        content.json, editable tour copy and area definitions
+luanti-web/           the WebAssembly build and the deployable site
+  build.sh            compiles Luanti to wasm (slow: tens of minutes)
+  static/             launcher page, serve.py, host header files
+  packs/              pack builders: the game pack and the world pack
+  mods/               eng_fog, eng_time, eng_spawn (source of truth)
+  assemble_site.sh    composes out/www: entry screen at /, Luanti at /luanti.html
+  out/www/            the deployable site (gitignored)
 blender/Eng.blend     source of the campus model
-scripts/              sign injection for the glb and the .blend
-docs/reference/       reference render of the campus model
+docs/reference/       reference render
 ```
 
-## Assets
+## Running it
 
-| File | Size | Notes |
-| --- | --- | --- |
-| `public/models/eng-campus.glb` | 13 MB | campus blockout + satellite terrain, 12 nodes + `sign` |
-| `public/models/aceb-1420.glb` | 20 MB | Scaniverse LiDAR scan, single mesh, 245k vertices |
-| `blender/Eng.blend` | 4.3 MB | source scene |
+The site needs cross-origin isolation headers, because the wasm engine uses
+threads and browsers refuse `SharedArrayBuffer` without them. A plain
+`python3 -m http.server` loads the page and then fails inside the engine, so use
+the bundled server:
 
-Committed as plain binaries — both files are well under GitHub's 100 MB limit,
-so LFS is not worth the setup cost here. `*.blend1` backups are ignored.
+```bash
+cd luanti-web
+./static/serve.py out/www          # http://localhost:8080
+```
+
+If `out/www` is missing, build it:
+
+```bash
+cd luanti-web
+./build.sh                          # wasm engine, tens of minutes, once
+./packs/make_world_pack.sh eng      # rebuild just the world pack, ~2 seconds
+./assemble_site.sh                  # entry screen + Luanti at one root
+./static/serve.py out/www
+```
+
+`make_world_pack.sh` builds the world pack from your local Luanti installation
+(`~/.minetest`), because the world is 8 MB of sqlite plus 266 node textures and
+those textures are Mojang assets that must not be redistributed. Only the small
+Lua in `luanti-web/mods/` travels with the repository; the generated `eng` mod
+is read from the install.
+
+## What the visitor gets
+
+- The campus at its real proportions: 569,545 blocks, 400 × 88 × 756, 266 block
+  types, baked once and shipped as a pack.
+- Late afternoon permanently (`timeofday = 0.74`, `time_speed = 0`), so every
+  visitor sees the same light and the sun never sets mid-demo.
+- Fog that starts at 70% of the view range, leaving the mid-distance clear.
+- Flying and fast movement already on, so nobody has to find K and J first.
+- A hand-off view: the visitor arrives at the author's rooftop vantage looking
+  across the rest of the complex. Walking away is preserved per player name.
+
+## Editing the world
+
+The world is authored in Luanti, not in this repository:
+
+```bash
+luanti --world ~/.minetest/worlds/eng
+```
+
+Rebuild the pack after changing it (about two seconds, no wasm rebuild needed):
+
+```bash
+cd luanti-web && ./packs/make_world_pack.sh eng && ./assemble_site.sh
+```
+
+The pack builder copies the map and drops the empty chunks that a flight session
+leaves behind — 64k blocks down to 7.2k in practice.
+
+## Notes
+
+- `viewer/` came from the WEVE front end. Its classroom tour and area picker are
+  hidden now that the campus build replaced the classroom; the markup and tour
+  code are still there so the two can be reunited.
+- Hosts that cannot send COOP/COEP (GitHub Pages, for example) cannot run the
+  engine. Netlify and Cloudflare Pages read `luanti-web/out/www/_headers`, and
+  Apache reads the `.htaccess` files.

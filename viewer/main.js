@@ -130,8 +130,9 @@ async function init() {
     const e = $('#entry-error');
     e.hidden = false;
     e.textContent = 'Could not load content.json. Serve this folder over HTTP (e.g. "npx vite" or "python -m http.server") rather than opening the file directly.';
-    $('#start-btn').disabled = true;
-    $('#text-btn').disabled = true;
+    // The start button leads to the Luanti world, which does not depend on this
+    // file, so it stays usable even when the classroom content cannot load.
+    wireUI();
     return;
   }
   analytics.endpoint = state.content.site?.analyticsEndpoint || null;
@@ -214,11 +215,14 @@ function openTextTour(notice) {
 /* UI wiring                                                           */
 /* ------------------------------------------------------------------ */
 function wireUI() {
-  $('#start-btn').addEventListener('click', () => startTour(state.selectedArea));
+  $('#start-btn').addEventListener('click', () => {
+    analytics.track('start_luanti');
+    window.location.assign('luanti.html');
+  });
   $('#text-btn').addEventListener('click', () => openTextTour());
   $('#skip-to-text').addEventListener('click', (e) => { e.preventDefault(); openTextTour(); });
 
-  $('#text-to-3d').addEventListener('click', () => startTour(state.areaId || state.selectedArea));
+  $('#text-to-3d').addEventListener('click', () => window.location.assign('luanti.html'));
   $('#text-to-start').addEventListener('click', () => { show('entry'); $('#start-btn').focus(); });
 
   $('#explore-btn').addEventListener('click', () => togglePanel('explore-panel', '#explore-btn'));

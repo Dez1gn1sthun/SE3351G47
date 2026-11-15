@@ -29,11 +29,14 @@
       </p>
       <h1 id="entry-title">Virtual Explorer</h1>
       <p class="lede">
-        Walk through a 3D-scanned Western Engineering classroom and the hallway outside it,
-        right from your browser. No download, no account.
+        Walk through Western Engineering's campus, voxel by voxel, right from your
+        browser. No download, no account.
       </p>
 
-      <fieldset class="area-select">
+      <!-- The classroom area picker belongs to the WEVE tour, which the campus
+           build replaced. Kept in the markup so the tour still works if it is
+           ever wired back up, but hidden from the entry screen. -->
+      <fieldset class="area-select" hidden>
         <legend>Where do you want to start?</legend>
         <div id="area-options" class="area-options"></div>
       </fieldset>
@@ -44,7 +47,7 @@
       </label>
 
       <div class="entry-actions">
-        <button id="start-btn" class="btn btn-primary" type="button">Start tour</button>
+        <button id="start-btn" class="btn btn-primary" type="button">Enter the campus</button>
         <button id="text-btn" class="btn btn-ghost" type="button">Text-only tour</button>
       </div>
 
