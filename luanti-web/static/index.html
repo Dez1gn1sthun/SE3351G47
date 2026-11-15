@@ -78,7 +78,7 @@
     <div id="track"><div id="fill"></div></div>
     <p class="detail" id="detail">
       Luanti compiles to WebAssembly, so the engine itself is running here in the
-      browser. The first visit downloads the game and the campus world; later
+      browser. The first visit downloads the game and the world; later
       visits load them from local storage.
     </p>
     <p class="fine" id="fine">
@@ -92,14 +92,14 @@
 (function () {
   "use strict";
 
-  var WORLD = "campus";
+  var WORLD = "eng";
   var GAME = "minetest";
   var PLAYER = "Visitor";
-  var SPAWN = "330,56,155";
+  var SPAWN = "120,52,465";
 
   var params = new URLSearchParams(window.location.search);
-  var range = parseInt(params.get("range") || "120", 10);
-  if (!(range > 0 && range <= 400)) { range = 120; }
+  var range = parseInt(params.get("range") || "190", 10);
+  if (!(range > 0 && range <= 400)) { range = 190; }
 
   // ?spawn=x,y,z overrides the documented spawn point, which is useful for
   // checking the campus from above without editing and rebuilding the page.
@@ -157,11 +157,16 @@
     // visitor's saved world along with the old files.
     mtl.setPacksDir("packs/", false);
 
-    // Memory and network: this is one fixed 550 x 474 build on a void map, so
+    // Send distance must cover viewing_range, or the chunk budget starves it:
+    // at 6 the server sent 96 blocks of chunks and 190 nodes of view range
+    // rendered as an empty horizon.
+    // Memory and network: this is one fixed 400 x 756 build on a void map, so
     // there is nothing to generate and no reason to reach far past it.
     mtl.setConf("viewing_range", range);
-    mtl.setConf("max_block_send_distance", 6);
-    mtl.setConf("max_block_generate_distance", 2);
+    // Derived, not fixed: at 6 the server only sent 96 blocks of chunks and a
+    // 190-node view range was starved into an empty horizon.
+    mtl.setConf("max_block_send_distance", Math.min(24, Math.ceil(range / 16) + 2));
+    mtl.setConf("max_block_generate_distance", 6);
 
     // Spawn on the tallest roof. The engine reads this from minetest.conf
     // only; world.mt is ignored.
@@ -174,6 +179,13 @@
     // without time_speed 0 the campus falls into night within minutes.
     mtl.setConf("creative_mode", "true");
     mtl.setConf("time_speed", "0");
+
+    // Fly and fast on arrival, so a visitor is not told to press K and J before
+    // they can look around. Two halves are needed: the privileges make the moves
+    // legal, and free_move/fast_move turn them on without a keypress.
+    mtl.setConf("default_privs", "interact,shout,fly,fast,noclip");
+    mtl.setConf("free_move", "true");
+    mtl.setConf("fast_move", "true");
     mtl.setLang("en");
 
     mtl.onprogress = function (task, fraction) {
@@ -199,7 +211,7 @@
     mtl.onerror = fail;
 
     mtl.onready = function () {
-      say("Entering campus\u2026");
+      say("Entering the campus\u2026");
       detail("Click the view once it appears to capture the mouse. " +
              "WASD to move, space to jump, E for the inventory.");
       var args = new LuantiArgs();
