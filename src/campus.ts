@@ -80,6 +80,8 @@ float massingNoise(vec3 p) {
   material.needsUpdate = true;
 }
 
+
+//Theses are specific to the scanned environment
 /**
  * Surface response per material. The export authors every material at the glTF
  * default of roughness 0.5, which makes glass, limestone and painted metal all
