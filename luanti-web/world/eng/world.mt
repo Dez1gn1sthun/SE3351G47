@@ -1,0 +1,11 @@
+gameid = minetest
+backend = sqlite3
+load_mod_eng = true
+enable_damage = false
+creative_mode = true
+player_backend = files
+auth_backend = files
+static_spawnpoint = 1197,515,4651
+server_announce = false
+load_mod_eng_fog = true
+load_mod_eng_time = true
