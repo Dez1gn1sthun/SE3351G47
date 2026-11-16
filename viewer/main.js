@@ -216,13 +216,19 @@ function openTextTour(notice) {
 /* ------------------------------------------------------------------ */
 function wireUI() {
   $('#start-btn').addEventListener('click', () => {
-    analytics.track('start_luanti');
-    window.location.assign('luanti.html');
+    // The entry checkbox has to reach the engine, not just this page: low
+    // performance means a shorter view range, cheaper lighting and no clouds.
+    const low = $('#lowperf-entry').checked;
+    state.lowPerf = low;
+    store.set('weve-lowperf', low ? '1' : '0');
+    analytics.track('start_luanti', { lowPerf: low });
+    window.location.assign('luanti.html' + (low ? '?lowperf=1' : ''));
   });
   $('#text-btn').addEventListener('click', () => openTextTour());
   $('#skip-to-text').addEventListener('click', (e) => { e.preventDefault(); openTextTour(); });
 
-  $('#text-to-3d').addEventListener('click', () => window.location.assign('luanti.html'));
+  $('#text-to-3d').addEventListener('click', () => window.location.assign(
+    'luanti.html' + (state.lowPerf ? '?lowperf=1' : '')));
   $('#text-to-start').addEventListener('click', () => { show('entry'); $('#start-btn').focus(); });
 
   $('#explore-btn').addEventListener('click', () => togglePanel('explore-panel', '#explore-btn'));

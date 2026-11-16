@@ -98,8 +98,13 @@
   var SPAWN = "120,52,465";
 
   var params = new URLSearchParams(window.location.search);
-  var range = parseInt(params.get("range") || "190", 10);
-  if (!(range > 0 && range <= 400)) { range = 190; }
+  // ?lowperf=1 comes from the entry screen's low-performance checkbox. It is a
+  // real engine setting, not decoration: smaller view and chunk budget, flat
+  // lighting, no clouds. range= still wins if both are given.
+  var lowperf = params.get("lowperf") === "1";
+  var defaultRange = lowperf ? 90 : 190;
+  var range = parseInt(params.get("range") || String(defaultRange), 10);
+  if (!(range > 0 && range <= 400)) { range = defaultRange; }
 
   // ?spawn=x,y,z overrides the documented spawn point, which is useful for
   // checking the campus from above without editing and rebuilding the page.
@@ -166,7 +171,12 @@
     // Derived, not fixed: at 6 the server only sent 96 blocks of chunks and a
     // 190-node view range was starved into an empty horizon.
     mtl.setConf("max_block_send_distance", Math.min(24, Math.ceil(range / 16) + 2));
-    mtl.setConf("max_block_generate_distance", 6);
+    mtl.setConf("max_block_generate_distance", lowperf ? 3 : 6);
+    if (lowperf) {
+      mtl.setConf("smooth_lighting", "false");
+      mtl.setConf("enable_3d_clouds", "false");
+      mtl.setConf("leaves_style", "simple");
+    }
 
     // Spawn on the tallest roof. The engine reads this from minetest.conf
     // only; world.mt is ignored.
