@@ -167,15 +167,24 @@
     // rendered as an empty horizon.
     // Memory and network: this is one fixed 400 x 756 build on a void map, so
     // there is nothing to generate and no reason to reach far past it.
-    mtl.setConf("viewing_range", range);
+    // overrideConf, not setConf: setConf only supplies defaults, and a saved
+    // minetest.conf in the browser keeps its own viewing_range, so the range
+    // would silently stay at whatever a previous visit stored.
+    mtl.overrideConf("viewing_range", range);
     // Derived, not fixed: at 6 the server only sent 96 blocks of chunks and a
     // 190-node view range was starved into an empty horizon.
-    mtl.setConf("max_block_send_distance", Math.min(24, Math.ceil(range / 16) + 2));
-    mtl.setConf("max_block_generate_distance", lowperf ? 3 : 6);
+    mtl.overrideConf("max_block_send_distance", Math.min(24, Math.ceil(range / 16) + 2));
+    mtl.overrideConf("max_block_generate_distance", lowperf ? 3 : 6);
     if (lowperf) {
-      mtl.setConf("smooth_lighting", "false");
-      mtl.setConf("enable_3d_clouds", "false");
-      mtl.setConf("leaves_style", "simple");
+      mtl.overrideConf("smooth_lighting", "false");
+      mtl.overrideConf("enable_3d_clouds", "false");
+      mtl.overrideConf("leaves_style", "simple");
+      mtl.overrideConf("fog_start", "0.5");
+    } else {
+      // Undo a previous low-performance visit rather than inheriting it.
+      mtl.overrideConf("smooth_lighting", "true");
+      mtl.overrideConf("enable_3d_clouds", "true");
+      mtl.overrideConf("leaves_style", "fancy");
     }
 
     // Spawn on the tallest roof. The engine reads this from minetest.conf
@@ -221,7 +230,7 @@
     mtl.onerror = fail;
 
     mtl.onready = function () {
-      say("Entering the campus\u2026");
+      say(lowperf ? "Entering the campus (low performance)\u2026" : "Entering the campus\u2026");
       detail("Click the view once it appears to capture the mouse. " +
              "WASD to move, space to jump, E for the inventory.");
       var args = new LuantiArgs();

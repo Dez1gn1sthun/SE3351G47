@@ -23,11 +23,19 @@ ISOLATION = {
 }
 
 
+# Everything we author is revalidated on every load: during development the page,
+# its scripts and the tour content all change often, and a cached main.js once
+# kept serving a start button that ignored the low-performance checkbox. Packs
+# and the hashed wasm release keep their long cache behaviour.
+LIVE_SUFFIXES = (".html", ".js", ".css", ".json", ".svg", ".txt")
+
+
 class Handler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
         for name, value in ISOLATION.items():
             self.send_header(name, value)
-        if self.path.split("?")[0] in ("/", "/index.html"):
+        path = self.path.split("?")[0]
+        if path in ("", "/") or path.endswith(LIVE_SUFFIXES):
             self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
         super().end_headers()
 
