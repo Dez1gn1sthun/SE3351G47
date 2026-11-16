@@ -13,12 +13,17 @@ const SKY_HORIZON = '#c3d2e2';
 const VIEW_DIRECTION = new THREE.Vector3(0.42, 1.05, -0.88).normalize();
 
 /**
+ * Mini Glossary:
+ * - massing : In architecture and design, massing is the arrangement of elements to convey the shape, form and size of a structure or product
+ * - mottling : Renders the gritty, rough texture (like sandstone texture) on the model
+ * - albedo : In the context of 3D rendering, defines the base color of a surface before lighting calculations.
  * The massing blocks ship as flat, single-colour boxes, which read as cardboard
  * from a low angle. Two cheap world-space effects fix most of that without
  * textures or UVs (several meshes have none):
  *
  * - contact occlusion: darkens the lower few metres of every volume, so blocks
  *   sit in the terrain instead of hovering over it
+ *
  * - mottling: a little value noise breaks up the perfectly even albedo that
  *   gives away an untextured box; the glazing is left smooth on purpose
  */
@@ -27,6 +32,7 @@ const AO_HEIGHT = 3.5;
 
 function applyMassingSurface(material: THREE.MeshStandardMaterial, mottle: boolean): void {
   material.onBeforeCompile = (shader) => {
+
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vMassingPos;')
       .replace(
@@ -34,47 +40,49 @@ function applyMassingSurface(material: THREE.MeshStandardMaterial, mottle: boole
         '#include <begin_vertex>\nvMassingPos = (modelMatrix * vec4(transformed, 1.0)).xyz;',
       );
 
-    shader.fragmentShader = shader.fragmentShader
-      .replace(
-        '#include <common>',
+    //defines massingNoise and massingHash
+    let searchString1 = `#include <common>`;
+    let replaceString1 =
         `#include <common>
-varying vec3 vMassingPos;
-float massingHash(vec3 p) {
-  return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453123);
-}
-float massingNoise(vec3 p) {
-  vec3 i = floor(p);
-  vec3 f = fract(p);
-  f = f * f * (3.0 - 2.0 * f);
-  float n000 = massingHash(i);
-  float n100 = massingHash(i + vec3(1.0, 0.0, 0.0));
-  float n010 = massingHash(i + vec3(0.0, 1.0, 0.0));
-  float n110 = massingHash(i + vec3(1.0, 1.0, 0.0));
-  float n001 = massingHash(i + vec3(0.0, 0.0, 1.0));
-  float n101 = massingHash(i + vec3(1.0, 0.0, 1.0));
-  float n011 = massingHash(i + vec3(0.0, 1.0, 1.0));
-  float n111 = massingHash(i + vec3(1.0, 1.0, 1.0));
-  return mix(
-    mix(mix(n000, n100, f.x), mix(n010, n110, f.x), f.y),
-    mix(mix(n001, n101, f.x), mix(n011, n111, f.x), f.y),
-    f.z
-  );
-}`,
-      )
-      .replace(
-        '#include <color_fragment>',
+        varying vec3 vMassingPos;
+        float massingHash(vec3 p) {
+          return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453123);
+        }
+        float massingNoise(vec3 p) {
+          vec3 i = floor(p);
+          vec3 f = fract(p);
+          f = f * f * (3.0 - 2.0 * f);
+          float n000 = massingHash(i);
+          float n100 = massingHash(i + vec3(1.0, 0.0, 0.0));
+          float n010 = massingHash(i + vec3(0.0, 1.0, 0.0));
+          float n110 = massingHash(i + vec3(1.0, 1.0, 0.0));
+          float n001 = massingHash(i + vec3(0.0, 0.0, 1.0));
+          float n101 = massingHash(i + vec3(1.0, 0.0, 1.0));
+          float n011 = massingHash(i + vec3(0.0, 1.0, 1.0));
+          float n111 = massingHash(i + vec3(1.0, 1.0, 1.0));
+          return mix(
+            mix(mix(n000, n100, f.x), mix(n010, n110, f.x), f.y),
+            mix(mix(n001, n101, f.x), mix(n011, n111, f.x), f.y),
+            f.z
+          );
+        }`;
+    //us
+    let searchString2 = `#include <color_fragment>`;
+    let replaceString2 =
         `#include <color_fragment>
-{
-  float height = smoothstep(${AO_GROUND_Y.toFixed(1)}, ${(AO_GROUND_Y + AO_HEIGHT).toFixed(1)}, vMassingPos.y);
-  float occlusion = mix(0.78, 1.0, height);
-  ${
-    mottle
-      ? `float blotch = massingNoise(vMassingPos * 0.55) * 0.65 + massingNoise(vMassingPos * 2.3) * 0.35;
-  diffuseColor.rgb *= occlusion * (0.88 + 0.12 * blotch);`
-      : 'diffuseColor.rgb *= occlusion;'
-  }
-}`,
-      );
+        {
+          float height = smoothstep(${AO_GROUND_Y.toFixed(1)}, ${(AO_GROUND_Y + AO_HEIGHT).toFixed(1)}, vMassingPos.y);
+          float occlusion = mix(0.78, 1.0, height);
+          ${
+            mottle
+                ? `float blotch = massingNoise(vMassingPos * 0.55) * 0.65 + massingNoise(vMassingPos * 2.3) * 0.35;
+                 diffuseColor.rgb *= occlusion * (0.88 + 0.12 * blotch);`
+              : 'diffuseColor.rgb *= occlusion;'
+          }
+        }`;
+    shader.fragmentShader = shader.fragmentShader
+      .replace(searchString1, replaceString1)
+      .replace(searchString2, replaceString2);
   };
   material.customProgramCacheKey = () => (mottle ? 'massing-mottled' : 'massing-smooth');
   material.needsUpdate = true;

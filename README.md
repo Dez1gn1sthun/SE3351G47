@@ -72,7 +72,7 @@ re-export, run `npm run sign --` again (it is idempotent: it moves the existing
 node if there is one).
 
 If the empty ever goes missing (a re-export from a stale `.blend`, say), the app
-still renders the marker at `SIGN_FALLBACK` in `src/config.ts` and logs an error.
+still renders the marker at `SIGN_FALLBACK` in `src/ts/config.ts` and logs an error.
 
 Dev helpers, stripped from production builds: append `?nodes` to draw every node
 name on screen, or `?sign=x,y,z` to try a marker position without re-exporting.
@@ -81,11 +81,11 @@ name on screen, or `?sign=x,y,z` to try a marker position without re-exporting.
 
 ```text
 index.html            shell: canvas, sign card, HUD, loader
-src/main.ts           renderer, mode switching, load/error flow, loop
-src/campus.ts         campus scene, camera framing, sign marker + projection
-src/room.ts           interior scan scene and disposal
-src/config.ts         model paths, sign node name, copy
-src/style.css         all styling
+src/ts/main.ts           renderer, mode switching, load/error flow, loop
+src/ts/campus.ts         campus scene, camera framing, sign marker + projection
+src/ts/room.ts           interior scan scene and disposal
+src/ts/config.ts         model paths, sign node name, copy
+src/css/style.css        all styling
 public/models/        eng-campus.glb, aceb-1420.glb (served as-is)
 blender/Eng.blend     source of the campus model
 scripts/              sign injection for the glb and the .blend
