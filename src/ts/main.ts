@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import './style.css';
+import '../css/style.css';
 import { CampusView } from './campus';
 import { RoomView } from './room';
 import { ROOM } from './config';
