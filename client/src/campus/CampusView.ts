@@ -704,7 +704,7 @@ export class CampusView {
 
   /**
    * Names every node on screen, so a sign position can be chosen by eye.
-   * Enabled from `main.ts` for `?nodes` in dev builds only; costs nothing in
+   * Enabled from `load()` for `?nodes` in dev builds only; costs nothing in
    * production because nothing ever fills `debugNodes`.
    */
   mountDebugNodes(): void {

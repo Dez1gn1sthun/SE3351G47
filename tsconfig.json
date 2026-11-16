@@ -1,4 +1,5 @@
 {
+  // Browser code (client/src). Node-side config is checked by tsconfig.node.json.
   "compilerOptions": {
     "target": "ES2022",
     "useDefineForClassFields": true,
@@ -20,5 +21,5 @@
 
     "types": ["vite/client"]
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["client/src"]
 }

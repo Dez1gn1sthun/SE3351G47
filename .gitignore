@@ -24,6 +24,38 @@ __pycache__/
 .idea/
 *.local
 
+# AI assistant config, memory and local state
+# Claude Code
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+.mcp.json
+# Cursor
+.cursor/
+.cursorrules
+.cursorignore
+.cursorindexingignore
+# GitHub Copilot
+.github/copilot-instructions.md
+.github/instructions/
+.github/prompts/
+# Windsurf / Codeium
+.windsurf/
+.windsurfrules
+.codeium/
+# Gemini, Codex and other agents
+.gemini/
+GEMINI.md
+.codex/
+AGENTS.md
+# Aider, Continue, Cline, Roo
+.aider*
+.continue/
+.clinerules
+.clinerules/
+.roo/
+.roomodes
+
 # Submission archives (may contain third-party assets)
 *.zip
 /Eng.glb

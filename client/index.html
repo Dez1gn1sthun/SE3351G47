@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>WEVE — Western Engineering Virtual Explorer</title>
+  <meta name="description" content="Explore Western Engineering's campus in 3D and step inside a LiDAR-scanned classroom, right from your browser.">
+  <meta name="theme-color" content="#2a1446">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <a class="skip-link" href="#text-tour" id="skip-to-text">Skip to the text-only tour</a>
+
+  <!-- Entry screen (#1, BR-01, BR-03, BR-10) -->
+  <section id="entry" class="screen entry" aria-labelledby="entry-title">
+    <div class="entry-card">
+      <p class="brand">
+        <span class="brand-mark" aria-hidden="true">W</span>
+        <span>Western Engineering</span>
+      </p>
+      <h1 id="entry-title">Virtual Explorer</h1>
+      <p class="lede">
+        Orbit Western Engineering's campus in 3D and step inside a LiDAR-scanned classroom,
+        right from your browser. No download, no account.
+      </p>
+
+      <label class="check">
+        <input type="checkbox" id="lowperf-entry">
+        <span>Low-performance mode <span class="hint">for older laptops and phones</span></span>
+      </label>
+
+      <div class="entry-actions">
+        <button id="start-btn" class="btn btn-primary" type="button">View campus</button>
+        <button id="text-btn" class="btn btn-ghost" type="button">Text-only tour</button>
+      </div>
+
+      <a class="program-link" href="https://www.eng.uwo.ca/" target="_blank" rel="noopener">Explore Western Engineering programs</a>
+      <p id="entry-error" class="entry-error" role="alert" hidden></p>
+    </div>
+  </section>
+
+  <!-- Accessible text alternative (#9, BR-11) -->
+  <section id="text-tour" class="screen text-tour" hidden tabindex="-1" aria-labelledby="text-title">
+    <header class="text-head">
+      <p class="brand">
+        <span class="brand-mark" aria-hidden="true">W</span>
+        <span>Western Engineering</span>
+      </p>
+      <h1 id="text-title">Virtual Explorer — text tour</h1>
+      <p id="text-notice" class="text-notice" hidden></p>
+      <div class="entry-actions">
+        <button id="text-to-3d" class="btn btn-primary" type="button">Open the 3D campus</button>
+        <button id="text-to-start" class="btn btn-ghost" type="button">Back to start</button>
+      </div>
+    </header>
+    <div id="text-content"></div>
+    <footer class="text-foot">
+      <a class="program-link" href="https://www.eng.uwo.ca/" target="_blank" rel="noopener">Explore Western Engineering programs</a>
+    </footer>
+  </section>
+
+  <noscript>
+    <p class="noscript">This page needs JavaScript. The 3D campus and the text tour are both built in the browser.</p>
+  </noscript>
+
+  <script type="module" src="./src/landing/main.ts"></script>
+</body>
+</html>

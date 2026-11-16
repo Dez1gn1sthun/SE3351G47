@@ -38,6 +38,7 @@
     </div>
 
     <header id="hud" class="hud" hidden>
+      <a class="hud__home" href="./">← Back to start</a>
       <h1>Western Engineering</h1>
       <p>Drag to orbit · Scroll to zoom</p>
     </header>
@@ -57,7 +58,7 @@
 
     <p id="room-hint" class="roomhint" hidden>Drag to look around · Scroll to move</p>
 
-    <!-- Dev only: node names drawn on screen for `?nodes` (see campus.ts). -->
+    <!-- Dev only: node names drawn on screen for `?nodes` (see CampusView.ts). -->
     <div id="node-debug"></div>
 
     <div id="loader" class="loader">
@@ -76,6 +77,6 @@
       <p class="noscript">This page needs JavaScript to render the 3D campus.</p>
     </noscript>
 
-    <script type="module" src="/src/ts/main.ts"></script>
+    <script type="module" src="./src/campus/main.ts"></script>
   </body>
 </html>

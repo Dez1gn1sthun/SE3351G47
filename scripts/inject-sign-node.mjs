@@ -17,7 +17,7 @@ const GLB_MAGIC = 0x46546c67;
 const CHUNK_JSON = 0x4e4f534a;
 const SIGN_NAME = 'sign';
 
-const file = process.argv[2] ?? 'public/models/eng-campus.glb';
+const file = process.argv[2] ?? 'client/public/models/eng-campus.glb';
 const coords = (process.argv[3] ?? '54.5,4,34').split(',').map(Number);
 
 if (coords.length !== 3 || coords.some((n) => !Number.isFinite(n))) {
