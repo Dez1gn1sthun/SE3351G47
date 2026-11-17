@@ -1,5 +1,5 @@
 {
-  "_readme": "Editable content for the WEVE landing page (BR-13): site links plus the areas and points of interest shown in the text-only tour. Info images are optional and live in client/public/images/info/; missing ones are hidden automatically.",
+  "_readme": "Editable content for the WEVE landing page (BR-13): site links, the areas and points of interest shown in the text-only tour, and the 3D room tour (rooms). Info images are optional and live in client/public/images/info/; missing ones are hidden automatically.",
   "site": {
     "title": "Western Engineering Virtual Explorer",
     "programLink": {
@@ -9,59 +9,184 @@
     "analyticsEndpoint": null
   },
   "areas": {
-    "hallway": {
-      "name": "Hallway",
-      "description": "A straight corridor about 20 metres long and 3 metres wide. Lockers line the right-hand wall and a notice board hangs on the left. The classroom door is halfway down on the left.",
-      "infoPoints": [
-        {
-          "id": "classroom-entrance",
-          "title": "Classroom entrance",
-          "text": "Placeholder: this door leads into one of the Engineering classrooms used for first-year lectures and tutorials. Replace this text with the real room number and what it's used for.",
-          "image": "images/info/classroom-door.jpg",
-          "imageAlt": "The classroom door seen from the hallway"
-        },
-        {
-          "id": "notice-board",
-          "title": "Notice board",
-          "text": "Placeholder: student clubs, design teams and co-op sessions post here. Replace with real content.",
-          "image": "images/info/notice-board.jpg",
-          "imageAlt": "A cork notice board covered with event posters"
-        }
-      ]
+    "campus": {
+      "name": "Western Engineering campus",
+      "description": "A 3D model of the engineering precinct: the building masses sit on satellite imagery of the site. A sign at the entrance of the Amit Chakma Engineering Building (ACEB) opens room ACEB 1420.",
+      "infoPoints": []
     },
-    "classroom": {
-      "name": "Classroom",
-      "description": "A classroom about 10 metres wide and 8 metres deep. The whiteboard and instructor station are at the front. Rows of desks face the front, windows run along the left wall, and the door is at the back right.",
+    "aceb-1420": {
+      "name": "ACEB 1420",
+      "description": "A lecture hall captured with a LiDAR scan. Curved, tiered rows of desks face a front wall of whiteboards, a curved desk stands at the front, and a projector hangs from the ceiling.",
       "infoPoints": [
         {
-          "id": "whiteboard",
-          "title": "Whiteboard",
-          "text": "Placeholder: instructors work through derivations and design problems here. Replace with real content.",
-          "image": "images/info/whiteboard.jpg",
-          "imageAlt": "The whiteboard at the front of the classroom"
+          "id": "whiteboards",
+          "title": "Whiteboards",
+          "text": "Whiteboards run along the front wall of ACEB 1420. Placeholder: add how instructors use them in Engineering lectures.",
+          "image": "images/info/whiteboards.jpg",
+          "imageAlt": "The whiteboards on the front wall"
         },
         {
-          "id": "instructor-station",
-          "title": "Instructor station",
-          "text": "Placeholder: the lectern controls the projector and lecture capture. Replace with real content.",
-          "image": "images/info/instructor-station.jpg",
-          "imageAlt": "The instructor's desk and lectern"
+          "id": "front-desk",
+          "title": "Front desk",
+          "text": "A curved desk sits at the front of the room, inside the innermost row. Placeholder: add what it is used for (instructor station, demonstrations).",
+          "image": "images/info/front-desk.jpg",
+          "imageAlt": "The curved desk at the front of the room"
         },
         {
-          "id": "seating",
-          "title": "Student seating",
-          "text": "Placeholder: desks are arranged in rows facing the front. Replace with real capacity and layout details.",
+          "id": "tiered-seating",
+          "title": "Tiered seating",
+          "text": "Curved, tiered rows of desks face the front of the room, so every seat looks down at the whiteboards. Placeholder: add the seating capacity and which courses use the room.",
           "image": "images/info/seating.jpg",
-          "imageAlt": "Rows of student desks"
+          "imageAlt": "Curved rows of desks rising toward the back"
         },
         {
-          "id": "windows",
-          "title": "Windows",
-          "text": "Placeholder: natural light along the left wall. Replace with what the windows look out on.",
-          "image": "images/info/windows.jpg",
-          "imageAlt": "Windows along the classroom wall"
+          "id": "projector",
+          "title": "Projector",
+          "text": "A projector hangs from the ceiling in the middle of the room. Placeholder: link the team's projector video here once it is approved.",
+          "image": "images/info/projector.jpg",
+          "imageAlt": "The ceiling-mounted projector"
+        },
+        {
+          "id": "doors",
+          "title": "Doors",
+          "text": "Doors open into the room at both ends. Placeholder: say which one is the main entrance and which hallway it opens onto.",
+          "image": "images/info/doors.jpg",
+          "imageAlt": "A door into ACEB 1420"
         }
       ]
+    }
+  },
+  "rooms": {
+    "aceb-1420": {
+      "name": "ACEB 1420",
+      "_readme": "Positions are scan coordinates in metres (Y up), the same space as models/aceb-1420.glb. Press the point's button in the Explore menu to check it.",
+      "infoPoints": [
+        {
+          "id": "whiteboards",
+          "title": "Whiteboards",
+          "position": [
+            3.75,
+            1.9,
+            2.4
+          ],
+          "text": "Whiteboards run along the front wall of ACEB 1420. Placeholder: add how instructors use them in Engineering lectures.",
+          "image": "images/info/whiteboards.jpg",
+          "imageAlt": "The whiteboards on the front wall"
+        },
+        {
+          "id": "front-desk",
+          "title": "Front desk",
+          "position": [
+            1.06,
+            1.1,
+            1.8
+          ],
+          "text": "A curved desk sits at the front of the room, inside the innermost row. Placeholder: add what it is used for (instructor station, demonstrations).",
+          "image": "images/info/front-desk.jpg",
+          "imageAlt": "The curved desk at the front of the room"
+        },
+        {
+          "id": "tiered-seating",
+          "title": "Tiered seating",
+          "position": [
+            -3.45,
+            1.5,
+            2.45
+          ],
+          "text": "Curved, tiered rows of desks face the front of the room, so every seat looks down at the whiteboards. Placeholder: add the seating capacity and which courses use the room.",
+          "image": "images/info/seating.jpg",
+          "imageAlt": "Curved rows of desks rising toward the back"
+        },
+        {
+          "id": "projector",
+          "title": "Projector",
+          "position": [
+            -2.03,
+            3.9,
+            -1.04
+          ],
+          "text": "A projector hangs from the ceiling in the middle of the room. Placeholder: link the team's projector video here once it is approved.",
+          "image": "images/info/projector.jpg",
+          "imageAlt": "The ceiling-mounted projector"
+        },
+        {
+          "id": "doors",
+          "title": "Doors",
+          "position": [
+            -1.78,
+            1.9,
+            8.3
+          ],
+          "text": "Doors open into the room at both ends. Placeholder: say which one is the main entrance and which hallway it opens onto.",
+          "image": "images/info/doors.jpg",
+          "imageAlt": "A door into ACEB 1420"
+        }
+      ],
+      "jumpPoints": [
+        {
+          "id": "overview",
+          "label": "Overview",
+          "camera": [
+            2.26,
+            3.03,
+            -5.36
+          ],
+          "target": [
+            0.59,
+            2.28,
+            -0.02
+          ]
+        },
+        {
+          "id": "rear-aisle",
+          "label": "Rear aisle",
+          "camera": [
+            -1.25,
+            2.9,
+            6.63
+          ],
+          "target": [
+            1.06,
+            1.2,
+            1.0
+          ]
+        },
+        {
+          "id": "front",
+          "label": "Front of the room",
+          "camera": [
+            2.2,
+            1.65,
+            2.3
+          ],
+          "target": [
+            -3.45,
+            1.4,
+            1.0
+          ]
+        },
+        {
+          "id": "top-row",
+          "label": "Top row",
+          "camera": [
+            -6.0,
+            2.55,
+            3.4
+          ],
+          "target": [
+            1.06,
+            1.0,
+            1.8
+          ]
+        }
+      ],
+      "plan": {
+        "image": "images/aceb-1420-plan.png",
+        "x0": -7.9,
+        "z0": -10.4,
+        "pxPerMetreX": 16.667,
+        "pxPerMetreZ": 16.154
+      }
     }
   }
 }

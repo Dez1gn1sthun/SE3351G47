@@ -19,6 +19,7 @@ export class LandingApp {
   constructor(private readonly content: ContentRepository) {
     this.entry = new EntryScreen({
       onViewCampus: () => this.openCampus(),
+      onOpenRoom: () => this.openCampus('aceb-1420'),
       onTextTour: () => this.openTextTour(),
     });
     this.textTour = new TextTour({
@@ -45,15 +46,15 @@ export class LandingApp {
     }
   }
 
-  private openCampus(): void {
+  private openCampus(room?: string): void {
     if (!supportsWebGL()) {
       this.openTextTour('3D graphics are not available on this device, so here is the text version of the tour.');
       return;
     }
     const lowPerf = this.entry.lowPerf;
     this.preferences.lowPerf = lowPerf;
-    this.analytics.track('campus_open', { from: this.currentScreen(), lowPerf });
-    window.location.assign(campusUrl({ lowPerf }));
+    this.analytics.track('campus_open', { from: this.currentScreen(), lowPerf, room: room ?? 'campus' });
+    window.location.assign(campusUrl({ lowPerf, room }));
   }
 
   private openTextTour(notice?: string): void {
