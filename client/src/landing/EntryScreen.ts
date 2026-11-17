@@ -2,6 +2,7 @@ import { requireElement } from '../shared/dom';
 
 export interface EntryScreenActions {
   onViewCampus(): void;
+  onOpenRoom(): void;
   onTextTour(): void;
 }
 
@@ -12,12 +13,14 @@ export interface EntryScreenActions {
 export class EntryScreen {
   private readonly root = requireElement<HTMLElement>('#entry');
   private readonly startButton = requireElement<HTMLButtonElement>('#start-btn');
+  private readonly roomButton = requireElement<HTMLButtonElement>('#room-btn');
   private readonly textButton = requireElement<HTMLButtonElement>('#text-btn');
   private readonly lowPerfCheckbox = requireElement<HTMLInputElement>('#lowperf-entry');
   private readonly error = requireElement<HTMLElement>('#entry-error');
 
   constructor(actions: EntryScreenActions) {
     this.startButton.addEventListener('click', () => actions.onViewCampus());
+    this.roomButton.addEventListener('click', () => actions.onOpenRoom());
     this.textButton.addEventListener('click', () => actions.onTextTour());
   }
 

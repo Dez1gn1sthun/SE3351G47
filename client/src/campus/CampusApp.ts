@@ -4,6 +4,7 @@ import { requireElement } from '../shared/dom';
 import { CampusView } from './CampusView';
 import { LoaderOverlay } from './LoaderOverlay';
 import { RoomView } from './RoomView';
+import { RoomTour, loadRoomContent } from './RoomTour';
 import { ROOM } from './config';
 import type { Mode } from './types';
 
@@ -33,6 +34,9 @@ export class CampusApp {
   // null means that the room scene is not currently loaded.
   private room: RoomView | null = null;
 
+  /** Information points, Explore menu and minimap for the open room. */
+  private tour: RoomTour | null = null;
+
   // Tracks which scene is currently being displayed.
   private mode: Mode = 'campus';
 
@@ -50,7 +54,7 @@ export class CampusApp {
    * Creates the WebGL renderer, campus scene and loading overlay.
    * Also fills in the room title and credit information.
    */
-  constructor(options: CampusOptions) {
+  constructor(private readonly options: CampusOptions) {
     // Create the renderer using the selected performance settings.
     this.renderer = createRenderer(this.canvas, options);
 
@@ -107,6 +111,9 @@ export class CampusApp {
 
       // Position the HTML sign at the correct location on the 3D model.
       this.campus.positionLabel(this.sign);
+
+      // Entry-screen area choice: go straight into the room.
+      if (this.options.room === 'aceb-1420') void this.openRoom();
     } catch (error) {
       // Display an error message if the campus model cannot load.
       this.loader.showError(error);
@@ -136,6 +143,9 @@ export class CampusApp {
       // Store the loaded room and switch the application to room mode.
       this.room = next;
       this.mode = 'room';
+
+      const content = await loadRoomContent('aceb-1420');
+      if (content) this.tour = new RoomTour(next, content);
 
       // Hide the campus interface and display the room controls.
       this.setRoomUiVisible(true);
@@ -167,6 +177,8 @@ export class CampusApp {
     this.mode = 'campus';
 
     // Dispose of the room scene and release its resources.
+    this.tour?.dispose();
+    this.tour = null;
     this.room?.dispose();
     this.room = null;
 
@@ -265,6 +277,7 @@ export class CampusApp {
 
     if (this.mode === 'room' && this.room) {
       // Update the room scene and render it using its own camera.
+      this.tour?.update(dt);
       this.room.update(dt);
       this.renderer.render(this.room.scene, this.room.camera);
     } else {

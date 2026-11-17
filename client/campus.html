@@ -56,7 +56,34 @@
       </div>
     </div>
 
-    <p id="room-hint" class="roomhint" hidden>Drag to look around · Scroll to move</p>
+    <p id="room-hint" class="roomhint" hidden>Drag to look around · Scroll to move · M explore · I nearest point</p>
+
+    <!-- Room tour (RoomTour.ts): information points, Explore menu, minimap. -->
+    <div id="announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    <div id="poi-markers" class="poi-layer" hidden></div>
+    <button id="explore-btn" class="explore-btn" type="button" aria-expanded="false" aria-controls="explore-panel" hidden>Explore</button>
+    <aside id="explore-panel" class="panel" hidden aria-labelledby="explore-title">
+      <div class="panel__head">
+        <h2 id="explore-title">Explore ACEB 1420</h2>
+        <button class="panel__close" type="button" data-close aria-label="Close the Explore menu">✕</button>
+      </div>
+      <h3>Go to</h3>
+      <ul id="jump-list" class="panel__list"></ul>
+      <h3>Points of interest</h3>
+      <ul id="poi-list" class="panel__list"></ul>
+    </aside>
+    <aside id="info-panel" class="panel panel--info" hidden role="dialog" aria-modal="false" aria-labelledby="info-title">
+      <div class="panel__head">
+        <h2 id="info-title"></h2>
+        <button class="panel__close" type="button" data-close aria-label="Close information panel">✕</button>
+      </div>
+      <img id="info-img" alt="" hidden />
+      <p id="info-text"></p>
+    </aside>
+    <figure id="minimap-wrap" class="minimap" hidden>
+      <canvas id="minimap" width="150" height="168" role="img" aria-label="Plan of ACEB 1420 showing where you are"></canvas>
+      <figcaption>ACEB 1420 · you are here</figcaption>
+    </figure>
 
     <!-- Dev only: node names drawn on screen for `?nodes` (see CampusView.ts). -->
     <div id="node-debug"></div>
