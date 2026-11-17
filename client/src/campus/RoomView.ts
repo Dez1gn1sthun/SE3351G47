@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MODELS } from './config';
 import type { ProgressFn } from './types';
 
@@ -44,6 +44,8 @@ export class RoomView {
       MODELS.room,
       (event) => onProgress?.(event.loaded, event.total),
     );
+
+    await restoreMissingTextures(gltf);
 
     this.model.add(gltf.scene);
     gltf.scene.traverse((child) => {
@@ -115,4 +117,64 @@ export class RoomView {
     });
     this.model.clear();
   }
+}
+
+/**
+ * The scan carries one 8192x8192 JPEG (about 256 MB once decoded). The browser
+ * sometimes refuses to decode an image that large, for example under memory
+ * pressure. GLTFLoader then logs "Couldn't load texture" and leaves the
+ * material without a map, so the room renders plain white. This decodes the
+ * embedded image again, with a few retries, and puts it back on the material.
+ */
+async function restoreMissingTextures(gltf: GLTF): Promise<void> {
+  const { parser } = gltf;
+  const json = parser.json;
+  const materials = new Set<THREE.MeshStandardMaterial>();
+  gltf.scene.traverse((child) => {
+    const mesh = child as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+      if (m && !(m as THREE.MeshStandardMaterial).map) materials.add(m as THREE.MeshStandardMaterial);
+    }
+  });
+
+  for (const material of materials) {
+    const materialIndex = parser.associations.get(material)?.materials;
+    if (materialIndex === undefined) continue;
+    const texRef = json.materials?.[materialIndex]?.pbrMetallicRoughness?.baseColorTexture;
+    if (!texRef) continue; // the material never had a texture
+    const texDef = json.textures?.[texRef.index];
+    const imageDef = json.images?.[texDef?.source];
+    if (imageDef?.bufferView === undefined) continue;
+
+    const data: ArrayBuffer = await parser.getDependency('bufferView', imageDef.bufferView);
+    const bitmap = await decodeWithRetry(new Blob([data], { type: imageDef.mimeType }));
+    if (!bitmap) {
+      console.error('RoomView: the scan texture could not be decoded; showing the untextured scan.');
+      continue;
+    }
+
+    // Match GLTFLoader's own texture setup.
+    const sampler = json.samplers?.[texDef.sampler] ?? {};
+    const texture = new THREE.Texture(bitmap);
+    texture.flipY = false;
+    texture.wrapS = sampler.wrapS === 33071 ? THREE.ClampToEdgeWrapping : THREE.RepeatWrapping;
+    texture.wrapT = sampler.wrapT === 33071 ? THREE.ClampToEdgeWrapping : THREE.RepeatWrapping;
+    texture.needsUpdate = true;
+    material.map = texture;
+    material.needsUpdate = true;
+    console.info('RoomView: scan texture restored after a failed first decode.');
+  }
+}
+
+async function decodeWithRetry(blob: Blob, attempts = 3): Promise<ImageBitmap | null> {
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      return await createImageBitmap(blob, { premultiplyAlpha: 'none' });
+    } catch (error) {
+      console.warn(`RoomView: scan texture decode attempt ${i} of ${attempts} failed`, error);
+      await new Promise((resolve) => setTimeout(resolve, 400 * i));
+    }
+  }
+  return null;
 }
