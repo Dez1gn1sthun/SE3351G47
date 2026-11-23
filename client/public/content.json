@@ -21,21 +21,21 @@
         {
           "id": "whiteboards",
           "title": "Whiteboards",
-          "text": "Whiteboards run along the front wall of ACEB 1420. Placeholder: add how instructors use them in Engineering lectures.",
+          "text": "Whiteboards run along the front wall of ACEB 1420. During lectures, Lecturers would write Mathamatical proofs, Formulas, or worked examples",
           "image": "images/info/whiteboards.jpg",
           "imageAlt": "The whiteboards on the front wall"
         },
         {
           "id": "front-desk",
           "title": "Front desk",
-          "text": "A curved desk sits at the front of the room, inside the innermost row. Placeholder: add what it is used for (instructor station, demonstrations).",
+          "text": "A curved desk sits at the front of the room, inside the innermost row. This desk is often used by the lecturer to connect their device to prepare for lecture",
           "image": "images/info/front-desk.jpg",
           "imageAlt": "The curved desk at the front of the room"
         },
         {
           "id": "tiered-seating",
           "title": "Tiered seating",
-          "text": "Curved, tiered rows of desks face the front of the room, so every seat looks down at the whiteboards. Placeholder: add the seating capacity and which courses use the room.",
+          "text": "Curved, tiered rows of desks face the front of the room, so every seat looks down at the whiteboards. This room has a seating capacity of 400.",
           "image": "images/info/seating.jpg",
           "imageAlt": "Curved rows of desks rising toward the back"
         },
@@ -49,7 +49,7 @@
         {
           "id": "doors",
           "title": "Doors",
-          "text": "Doors open into the room at both ends. Placeholder: say which one is the main entrance and which hallway it opens onto.",
+          "text": "Doors open into the room at both ends. This lead to the ACEB hallway",
           "image": "images/info/doors.jpg",
           "imageAlt": "A door into ACEB 1420"
         }
@@ -69,7 +69,7 @@
             1.9,
             2.4
           ],
-          "text": "Whiteboards run along the front wall of ACEB 1420. Placeholder: add how instructors use them in Engineering lectures.",
+          "text": "Whiteboards run along the front wall of ACEB 1420. During lectures, Lecturers would write Mathamatical proofs, Formulas, or worked examples",
           "image": "images/info/whiteboards.jpg",
           "imageAlt": "The whiteboards on the front wall"
         },
@@ -81,7 +81,7 @@
             1.1,
             1.8
           ],
-          "text": "A curved desk sits at the front of the room, inside the innermost row. Placeholder: add what it is used for (instructor station, demonstrations).",
+          "text": "A curved desk sits at the front of the room, inside the innermost row. This desk is often used by the lecturer to connect their device to prepare for lecture",
           "image": "images/info/front-desk.jpg",
           "imageAlt": "The curved desk at the front of the room"
         },
@@ -93,7 +93,7 @@
             1.5,
             2.45
           ],
-          "text": "Curved, tiered rows of desks face the front of the room, so every seat looks down at the whiteboards. Placeholder: add the seating capacity and which courses use the room.",
+          "text": "Curved, tiered rows of desks face the front of the room, so every seat looks down at the whiteboards. This room has a seating capacity of 400.",
           "image": "images/info/seating.jpg",
           "imageAlt": "Curved rows of desks rising toward the back"
         },
@@ -117,7 +117,7 @@
             1.9,
             8.3
           ],
-          "text": "Doors open into the room at both ends. Placeholder: say which one is the main entrance and which hallway it opens onto.",
+          "text": "Doors open into the room at both ends. This lead to the ACEB hallway",
           "image": "images/info/doors.jpg",
           "imageAlt": "A door into ACEB 1420"
         }
