@@ -42,7 +42,7 @@
         {
           "id": "projector",
           "title": "Projector",
-          "text": "A projector hangs from the ceiling in the middle of the room. Placeholder: link the team's projector video here once it is approved.",
+          "text": "A projector hangs from the ceiling in the middle of the room.",
           "image": "images/info/projector.jpg",
           "imageAlt": "The ceiling-mounted projector"
         },
@@ -105,7 +105,7 @@
             3.9,
             -1.04
           ],
-          "text": "A projector hangs from the ceiling in the middle of the room. Placeholder: link the team's projector video here once it is approved.",
+          "text": "A projector hangs from the ceiling in the middle of the room.",
           "image": "images/info/projector.jpg",
           "imageAlt": "The ceiling-mounted projector"
         },
