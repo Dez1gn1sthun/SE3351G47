@@ -12,7 +12,23 @@
     "campus": {
       "name": "Western Engineering campus",
       "description": "A 3D model of the engineering precinct: the building masses sit on satellite imagery of the site. A sign at the entrance of the Amit Chakma Engineering Building (ACEB) opens room ACEB 1420.",
-      "infoPoints": []
+      "infoPoints": [
+        {
+          "id": "teb",
+          "title": "TEB",
+          "text": "Coming soon."
+        },
+        {
+          "id": "seb",
+          "title": "SEB",
+          "text": "Coming soon."
+        },
+        {
+          "id": "aceb",
+          "title": "ACEB",
+          "text": "The Amit Chakma Engineering Building is featured in the 3D campus tour, including access to the ACEB 1420 LiDAR room scan."
+        }
+      ]
     },
     "aceb-1420": {
       "name": "ACEB 1420",
