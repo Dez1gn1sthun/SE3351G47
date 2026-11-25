@@ -26,6 +26,12 @@ export const SIGN_NODE_NAME = 'sign';
  */
 export const SIGN_FALLBACK = { x: 20, y: 1.5, z: -4.5 } as const;
 
+/** Ground-plane WASD movement speed, in world units per second. */
+export const WASD_MOVE_SPEED = 36;
+
+/** The room is much smaller, so it uses a slower navigation speed. */
+export const ROOM_WASD_MOVE_SPEED = 6;
+
 export const ROOM = {
   title: 'ACEB 1420',
   kicker: 'LiDAR scan',

@@ -217,6 +217,9 @@ export class RoomTour {
   /* ---------------------------------------------------------- per frame */
 
   update(dt: number): void {
+    // RoomView updates navigation first; keyboard movement takes priority over
+    // a quick-jump glide instead of the two controls fighting over the camera.
+    if (this.view.navigation.isMoving) this.glide = null;
     if (this.glide) {
       const g = this.glide;
       g.t = Math.min(1, g.t + dt / GLIDE_SECONDS);

@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { MODELS, SIGN_FALLBACK, SIGN_NODE_NAME } from './config';
+import { MODELS, SIGN_FALLBACK, SIGN_NODE_NAME, WASD_MOVE_SPEED } from './config';
+import { GroundNavigator } from './GroundNavigator';
 import type { ProgressFn } from './types';
 
 /** Where the camera sits relative to the building cluster, at rest. */
@@ -242,6 +243,7 @@ export class CampusView {
   readonly scene = new THREE.Scene();
   readonly camera: THREE.PerspectiveCamera;
   readonly controls: OrbitControls;
+  readonly navigation: GroundNavigator;
 
   /** World-space anchor of the `sign` empty. */
   readonly anchor = new THREE.Vector3(SIGN_FALLBACK.x, SIGN_FALLBACK.y, SIGN_FALLBACK.z);
@@ -293,6 +295,7 @@ export class CampusView {
     this.controls.addEventListener('start', () => {
       this.touched = true;
     });
+    this.navigation = new GroundNavigator(this.camera, this.controls, WASD_MOVE_SPEED);
 
     this.sun = new THREE.DirectionalLight('#fff1d8', 1.35);
     this.sun.castShadow = true;
@@ -657,6 +660,7 @@ export class CampusView {
   }
 
   update(dt: number): void {
+    if (this.navigation.update(dt)) this.touched = true;
     this.controls.update(dt);
 
     this.elapsed += dt;
@@ -754,6 +758,7 @@ export class CampusView {
   }
 
   dispose(): void {
+    this.navigation.dispose();
     this.controls.dispose();
     this.scene.traverse((child) => {
       const mesh = child as THREE.Mesh;

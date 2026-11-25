@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { MODELS } from './config';
+import { MODELS, ROOM_WASD_MOVE_SPEED } from './config';
+import { GroundNavigator } from './GroundNavigator';
 import type { ProgressFn } from './types';
 
 /**
@@ -15,6 +16,7 @@ export class RoomView {
   readonly scene = new THREE.Scene();
   readonly camera: THREE.PerspectiveCamera;
   readonly controls: OrbitControls;
+  readonly navigation: GroundNavigator;
 
   private readonly model = new THREE.Group();
 
@@ -32,6 +34,7 @@ export class RoomView {
     // Looking past vertical inside a room flips the scan upside down.
     this.controls.minPolarAngle = 0.12;
     this.controls.maxPolarAngle = Math.PI - 0.12;
+    this.navigation = new GroundNavigator(this.camera, this.controls, ROOM_WASD_MOVE_SPEED);
 
     this.scene.add(new THREE.HemisphereLight('#ffffff', '#5a5f70', 2.6));
     const fill = new THREE.DirectionalLight('#ffffff', 1.3);
@@ -93,6 +96,7 @@ export class RoomView {
   }
 
   update(dt: number): void {
+    this.navigation.update(dt);
     this.controls.update(dt);
   }
 
@@ -103,6 +107,7 @@ export class RoomView {
 
   /** Frees ~20 MB of texture and geometry as soon as the user leaves. */
   dispose(): void {
+    this.navigation.dispose();
     this.controls.dispose();
     this.model.traverse((child) => {
       const mesh = child as THREE.Mesh;

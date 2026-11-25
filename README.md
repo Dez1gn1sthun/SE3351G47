@@ -144,8 +144,10 @@ docs/reference/             reference render of the campus model
   the room disposes the geometry and textures to give the GPU memory back.
   Reopening it re-fetches from the HTTP cache.
 
-Controls: drag to orbit, right-drag to pan, scroll to zoom. In the room, drag to
-look around, scroll to move, and press `Esc` (or the Campus button) to leave.
+Controls: drag to orbit, right-drag to pan, scroll to zoom, and hold W/A/S/D
+to move the orbit point across the ground plane relative to the camera. In the
+room, drag to look around, scroll to move, and use W/A/S/D for the same
+ground-plane movement; press `Esc` (or the Campus button) to leave.
 "← Back to start" in the top-left corner returns to the landing page.
 
 ## Moving the sign

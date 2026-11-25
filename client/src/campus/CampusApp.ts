@@ -276,9 +276,9 @@ export class CampusApp {
     this.previousFrame = now;
 
     if (this.mode === 'room' && this.room) {
-      // Update the room scene and render it using its own camera.
-      this.tour?.update(dt);
+      // Apply room navigation before tour glides so WASD can cancel a glide.
       this.room.update(dt);
+      this.tour?.update(dt);
       this.renderer.render(this.room.scene, this.room.camera);
     } else {
       // Update the campus scene and reposition its interactive sign.
